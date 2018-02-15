@@ -288,8 +288,7 @@ if(params.aligner == 'star'){
             --outSAMtype BAM SortedByCoordinate \\
             --readFilesCommand zcat \\
             --runDirPerm All_RWX \\
-            --outFileNamePrefix $prefix \\
-            --limitBAMsortRAM 8000000000
+            --outFileNamePrefix $prefix 
         """
     }
     // Filter removes all 'aligned' channels that fail the check
@@ -298,3 +297,47 @@ if(params.aligner == 'star'){
         .flatMap {  logs, bams -> bams }
     .into { bam_count; bam_rseqc; bam_preseq; bam_markduplicates; bam_featurecounts; bam_stringtieFPKM; bam_geneBodyCoverage }
 }
+
+/*
+ * STEP 6 Mark duplicates
+ */
+process markDuplicates {
+    tag "${bam_markduplicates.baseName - '.sorted'}"
+    publishDir "${params.outdir}/markDuplicates", mode: 'copy',
+        saveAs: {filename -> filename.indexOf("_metrics.txt") > 0 ? "metrics/$filename" : "$filename"}
+
+    input:
+    file bam_markduplicates
+
+    output:
+    file "${bam_markduplicates.baseName}.markDups.bam" into bam_md
+    file "${bam_markduplicates.baseName}.markDups_metrics.txt" into picard_results
+    file "${bam_markduplicates.baseName}.bam.bai"
+    file '.command.log' into markDuplicates_stdout
+
+    script:
+    if( task.memory == null ){
+        log.info "[Picard MarkDuplicates] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this."
+        avail_mem = 3
+    } else {
+        avail_mem = task.memory.toGiga()
+    }
+    """
+    java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar MarkDuplicates \\
+        INPUT=$bam_markduplicates \\
+        OUTPUT=${bam_markduplicates.baseName}.markDups.bam \\
+        METRICS_FILE=${bam_markduplicates.baseName}.markDups_metrics.txt \\
+        REMOVE_DUPLICATES=false \\
+        ASSUME_SORTED=true \\
+        PROGRAM_RECORD_ID='null' \\
+        VALIDATION_STRINGENCY=LENIENT
+
+    # Print version number to standard out
+    echo "File name: $bam_markduplicates Picard version "\$(java -Xmx2g -jar \$PICARD_HOME/picard.jar  MarkDuplicates --version 2>&1)
+    samtools index $bam_markduplicates
+    """
+}
+
+
+
+
