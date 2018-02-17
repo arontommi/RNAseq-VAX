@@ -350,7 +350,6 @@ process splitNCigarReads {
 
     output:
     file "*.bam" into splitNCigar_bam
-    prefix = bam_md.toString() - ~/(_R1)?(_trimmed)?(_val_1)?(\.fq)?(\.fastq)?(\.gz)?$/
 
     script:
 
@@ -359,7 +358,7 @@ process splitNCigarReads {
         -T SplitNCigarReads \\
         -R $fasta \\
         -I $bam_md \\ 
-        -o ${prefix}_split.bam \\
+        -o ${bam_md}_split.bam \\
         -rf ReassignOneMappingQuality \\
         -RMQF 255 \\
         -RMQT 60 \\
@@ -380,7 +379,6 @@ process haplotypeCaller {
     output:
     file "*.vcf" into vcf
     script:
-    prefix = splitNCigar_bam.toString() - ~/(_R1)?(_trimmed)?(_val_1)?(\.fq)?(\.fastq)?(\.gz)?$/
 
     """
     java -jar \$GATK_HOME/GenomeAnalysisTK.jar \\
@@ -389,7 +387,7 @@ process haplotypeCaller {
         -I $splitNCigar_bam \\ 
         -dontUseSoftClippedBases \\
         -stand_call_conf 20.0 \\
-        -o ${prefix}.vcf
+        -o ${splitNCigar_bam}.vcf
     """
 }
 
