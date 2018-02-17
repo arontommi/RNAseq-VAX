@@ -53,7 +53,21 @@ RUN git clone https://github.com/alexdobin/STAR.git /opt/STAR && \
 # Install MultiQC
 RUN pip install git+git://github.com/ewels/MultiQC.git
 
+# Install GATK
+RUN curl -fsSL https://github.com/broadinstitute/gatk/releases/download/4.0.1.2/gatk-4.0.1.2.zip -o /opt/gatk-4.0.1.2.zip && \
+    unzip /opt/gatk-4.0.1.2.zip -d /opt/ && \
+    rm /opt/gatk-4.0.1.2.zip
+ENV GATK_HOME /opt/gatk-4.0.1.2
+
+# Install PicardTools
+RUN curl -fsSL https://github.com/broadinstitute/picard/releases/download/2.0.1/picard-tools-2.0.1.zip -o /opt/picard-tools-2.0.1.zip && \
+    unzip /opt/picard-tools-2.0.1.zip -d /opt/ && \
+    rm /opt/picard-tools-2.0.1.zip
+ENV PICARD_HOME /opt/picard-tools-2.0.1
+
 # Create root directories for common Swedish HPC systems
 RUN mkdir /pica /lupus /crex1 /crex2 /proj /scratch /sw \
           /c3se /local /apps
+
+
 
