@@ -350,15 +350,15 @@ process splitNCigarReads {
 
     output:
     file "*.bam" into splitNCigar_bam
-    prefix = bam_md[0].toString() - ~/(_R1)?(_trimmed)?(_val_1)?(\.fq)?(\.fastq)?(\.gz)?$/
+    prefix = bam_md.toString() - ~/(_R1)?(_trimmed)?(_val_1)?(\.fq)?(\.fastq)?(\.gz)?$/
 
     script:
 
     """
     java -jar \$GATK_HOME/GenomeAnalysisTK.jar \\
         -T SplitNCigarReads \\
-        -R ref.fasta \\
-        -I bam_md \\ 
+        -R $fasta \\
+        -I $bam_md \\ 
         -o ${prefix}_split.bam \\
         -rf ReassignOneMappingQuality \\
         -RMQF 255 \\
@@ -380,13 +380,13 @@ process haplotypeCaller {
     output:
     file "*.vcf" into vcf
     script:
-    prefix = reads[0].toString() - ~/(_R1)?(_trimmed)?(_val_1)?(\.fq)?(\.fastq)?(\.gz)?$/
+    prefix = splitNCigar_bam.toString() - ~/(_R1)?(_trimmed)?(_val_1)?(\.fq)?(\.fastq)?(\.gz)?$/
 
     """
     java -jar \$GATK_HOME/GenomeAnalysisTK.jar \\
         -T HaplotypeCaller \\
-        -R fasta \\
-        -I splitNCigar_bam \\ 
+        -R $fasta \\
+        -I $splitNCigar_bam \\ 
         -dontUseSoftClippedBases \\
         -stand_call_conf 20.0 \\
         -o ${prefix}.vcf
