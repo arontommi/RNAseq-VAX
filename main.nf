@@ -338,6 +338,61 @@ process markDuplicates {
     """
 }
 
+/*
+ * STEP 7 SplitNCigarReads
+ */
+process splitNCigarReads {
+    tag "${bam_md.baseName - '.splitncig'}"
+
+    input:
+    file bam_md
+    file fasta
+
+    output:
+    file "*.bam" into splitNCigar_bam
+    prefix = bam_md[0].toString() - ~/(_R1)?(_trimmed)?(_val_1)?(\.fq)?(\.fastq)?(\.gz)?$/
+
+    script:
+
+    """
+    java -jar \$GATK_HOME/GenomeAnalysisTK.jar \\
+        -T SplitNCigarReads \\
+        -R ref.fasta \\
+        -I bam_md \\ 
+        -o ${prefix}_split.bam \\
+        -rf ReassignOneMappingQuality \\
+        -RMQF 255 \\
+        -RMQT 60 \\
+        -U ALLOW_N_CIGAR_READS 
+
+    """
+}
+
+/*
+ * STEP 7 SplitNCigarReads
+ */
+process haplotypeCaller {
+    tag "${bam_md.baseName - '.vcf'}"
+
+    input:
+    file splitNCigar_bam
+    file fasta
+    output:
+    file "*.vcf" into vcf
+    script:
+    prefix = reads[0].toString() - ~/(_R1)?(_trimmed)?(_val_1)?(\.fq)?(\.fastq)?(\.gz)?$/
+
+    """
+    java -jar \$GATK_HOME/GenomeAnalysisTK.jar \\
+        -T HaplotypeCaller \\
+        -R fasta \\
+        -I splitNCigar_bam \\ 
+        -dontUseSoftClippedBases \\
+        -stand_call_conf 20.0 \\
+        -o ${prefix}.vcf
+    """
+}
+
 
 
 
