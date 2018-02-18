@@ -65,6 +65,15 @@ RUN curl -fsSL https://github.com/broadinstitute/picard/releases/download/2.0.1/
     rm /opt/picard-tools-2.0.1.zip
 ENV PICARD_HOME /opt/picard-tools-2.0.1
 
+# Install SAMTools
+RUN curl -fsSL https://github.com/samtools/samtools/releases/download/1.3.1/samtools-1.3.1.tar.bz2 -o /opt/samtools-1.3.1.tar.bz2 && \
+    tar xvjf /opt/samtools-1.3.1.tar.bz2 -C /opt/ && \
+    cd /opt/samtools-1.3.1 && \
+    make && \
+    make install && \
+    rm /opt/samtools-1.3.1.tar.bz2
+
+
 # Create root directories for common Swedish HPC systems
 RUN mkdir /pica /lupus /crex1 /crex2 /proj /scratch /sw \
           /c3se /local /apps
