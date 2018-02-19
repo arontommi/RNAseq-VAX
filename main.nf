@@ -317,10 +317,10 @@ process addReadGroups{
 
     input:
     file bam_markduplicates
-    val name from samplename
-    rglb from params.rglb
-    rgpl from params.rgpl
-    rgpu from params.rgpu
+    val samplename
+    val rglb from params.rglb
+    val rgpl from params.rgpl
+    val rgpu from params.rgpu
     output:
     file "${bam_markduplicates.baseName}.RG.bam" into rg_bam
 
@@ -339,7 +339,7 @@ process addReadGroups{
         RGLB=$rglb \\
         RGPL=$rgpl \\
         RGPU=$rgpu \\
-        RGSM=$name
+        RGSM=$samplename
     """
 }
 
