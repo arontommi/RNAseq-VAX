@@ -102,6 +102,7 @@ else if ( !params.download_gtf ){
 if ( params.fasta ){
     fasta = file(params.fasta)
     fai = file(params.fasta + '.fai')
+    dict = file(params.fasta + '.dict')
     if( !fasta.exists() ) exit 1, "Fasta file not found: ${params.fasta}"
 }
 
@@ -349,6 +350,7 @@ process splitNCigarReads {
     file bam_md
     file fasta
     file fai
+    file dict
 
     output:
     file "*.bam" into splitNCigar_bam
@@ -372,6 +374,10 @@ process haplotypeCaller {
     input:
     file splitNCigar_bam
     file fasta
+    file fasta
+    file fai
+    file dict
+    
     output:
     file "*.vcf" into vcf
     script:
