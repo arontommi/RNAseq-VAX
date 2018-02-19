@@ -358,7 +358,7 @@ process splitNCigarReads {
     -R $fasta \\
     -I $bam_md \\
     -O ${bam_md}_split.bam \\
-    -rf ReassignOneMappingQuality \\
+    -RF ReassignOneMappingQuality \\
     -RMQF 255 \\
     -RMQT 60 \\
     -U ALLOW_N_CIGAR_READS
