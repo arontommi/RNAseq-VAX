@@ -349,7 +349,7 @@ process markDuplicates {
  * STEP 7 SplitNCigarReads
  */
 process splitNCigarReads {
-    tag "${bam_md.baseName - '.splitncig'}"
+    tag "${bam_md - '.splitncig'}"
 
     input:
     file bam_md
@@ -374,7 +374,7 @@ process splitNCigarReads {
  * STEP 7 SplitNCigarReads
  */
 process haplotypeCaller {
-    tag "${bam_md.baseName - '.vcf'}"
+    tag "${bam_md - '.vcf'}"
 
     input:
     file splitNCigar_bam
