@@ -378,7 +378,7 @@ process splitNCigarReads {
  * STEP 7 SplitNCigarReads
  */
 process haplotypeCaller {
-    tag "$name"
+    tag "$splitNCigar_bam.baseName"
 
     input:
     file splitNCigar_bam
@@ -395,7 +395,7 @@ process haplotypeCaller {
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar HaplotypeCaller \\
     -R $fasta \\
     -I $splitNCigar_bam \\
-    -dontUseSoftClippedBases \\
+    --dont-use-soft-clipped-bases \\
     -stand_call_conf 20.0 \\
     -o ${splitNCigar_bam.baseName}.vcf
     """
