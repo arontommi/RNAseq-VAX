@@ -322,7 +322,7 @@ process addReadGroups{
     rgpl from params.rgpl
     rgpu from params.rgpu
     output:
-    file "${bam_markduplicates.baseName}.RG.bam" into bam_md
+    file "${bam_markduplicates.baseName}.RG.bam" into rg_bam
 
 
     script:
@@ -354,7 +354,7 @@ process markDuplicates {
         saveAs: {filename -> filename.indexOf("_metrics.txt") > 0 ? "metrics/$filename" : "$filename"}
 
     input:
-    file bam_markduplicates
+    file rg_bam
 
     output:
     file "${bam_markduplicates.baseName}.markDups.bam" into bam_md
