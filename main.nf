@@ -360,7 +360,7 @@ process splitNCigarReads {
 
     output:
     file "*.bam" into splitNCigar_bam
-    file "*.bam.bai" into splitNCigar_bam_bai
+    file "*.bai" into splitNCigar_bam_bai
 
     script:
 
