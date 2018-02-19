@@ -356,7 +356,7 @@ process splitNCigarReads {
     """
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
     -R $fasta \\
-    I $bam_md \\ 
+    -I $bam_md \\ 
     -o ${bam_md}_split.bam \\
     -rf ReassignOneMappingQuality \\
     -RMQF 255 \\
