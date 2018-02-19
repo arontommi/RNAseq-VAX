@@ -396,7 +396,7 @@ process haplotypeCaller {
     -R $fasta \\
     -I $splitNCigar_bam \\
     --dont-use-soft-clipped-bases \\
-    -stand_call_conf 20.0 \\
+    --standard-min-confidence-threshold-for-calling,-stand-call-conf 20.0 \\
     -o ${splitNCigar_bam.baseName}.vcf
     """
 }
