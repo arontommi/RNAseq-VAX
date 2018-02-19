@@ -356,7 +356,7 @@ process splitNCigarReads {
     """
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
     -R $fasta \\
-    -I $bam_md \\ 
+    -I $bam_md \\
     -o ${bam_md}_split.bam \\
     -rf ReassignOneMappingQuality \\
     -RMQF 255 \\
@@ -381,7 +381,7 @@ process haplotypeCaller {
     """
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar HaplotypeCaller \\
     -R $fasta \\
-    -I $splitNCigar_bam \\ 
+    I $splitNCigar_bam \\
     -dontUseSoftClippedBases \\
     -stand_call_conf 20.0 \\
     -o ${splitNCigar_bam}.vcf
