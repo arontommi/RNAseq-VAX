@@ -397,7 +397,7 @@ process haplotypeCaller {
     -I $splitNCigar_bam \\
     --dont-use-soft-clipped-bases \\
     --standard-min-confidence-threshold-for-calling 20.0 \\
-    -o ${splitNCigar_bam.baseName}.vcf
+    -O ${splitNCigar_bam.baseName}.vcf
     """
 }
 
