@@ -397,7 +397,7 @@ process haplotypeCaller {
     -I $splitNCigar_bam \\
     -dontUseSoftClippedBases \\
     -stand_call_conf 20.0 \\
-    -o ${name}.vcf
+    -o ${splitNCigar_bam.baseName}.vcf
     """
 }
 
