@@ -354,7 +354,7 @@ process splitNCigarReads {
     script:
 
     """
-    java -jar \$GATK_HOME/GenomeAnalysisTK.jar \\
+    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar\\
         -T SplitNCigarReads \\
         -R $fasta \\
         -I $bam_md \\ 
@@ -381,7 +381,7 @@ process haplotypeCaller {
     script:
 
     """
-    java -jar \$GATK_HOME/GenomeAnalysisTK.jar \\
+    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar \\
         -T HaplotypeCaller \\
         -R $fasta \\
         -I $splitNCigar_bam \\ 
