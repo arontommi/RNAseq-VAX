@@ -349,7 +349,7 @@ process markDuplicates {
  * STEP 7 SplitNCigarReads
  */
 process splitNCigarReads {
-    tag "$name"
+    tag "$bam_md"
 
     input:
     file bam_md
@@ -381,7 +381,7 @@ process haplotypeCaller {
     tag "$name"
 
     input:
-    set val(name), file(bam_md) from splitNCigar_bam
+    file splitNCigar_bam
     file splitNCigar_bam_bai
     file fasta
     file fasta
