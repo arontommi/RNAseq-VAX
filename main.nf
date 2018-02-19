@@ -368,7 +368,7 @@ process splitNCigarReads {
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
     -R $fasta \\
     -I $bam_md \\
-    -O ${$name}_split.bam 
+    -O ${name}_split.bam 
 
     samtools index ${$name}_split.bam 
     """
@@ -398,7 +398,7 @@ process haplotypeCaller {
     -I $splitNCigar_bam \\
     -dontUseSoftClippedBases \\
     -stand_call_conf 20.0 \\
-    -o ${splitNCigar_bam}.vcf
+    -o ${name}.vcf
     """
 }
 
