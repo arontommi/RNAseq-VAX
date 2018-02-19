@@ -352,7 +352,7 @@ process splitNCigarReads {
     tag "$name"
 
     input:
-    set val(name), file(bam_md) from bam_md
+    file bam_md
     file bam_md_bai
     file fasta
     file fai
@@ -368,9 +368,9 @@ process splitNCigarReads {
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
     -R $fasta \\
     -I $bam_md \\
-    -O ${name}_split.bam 
+    -O ${bam_md.baseName}_split.bam 
 
-    samtools index ${name}_split.bam 
+    samtools index ${bam_md.baseName}_split.bam 
     """
 }
 
