@@ -370,7 +370,7 @@ process splitNCigarReads {
     -I $bam_md \\
     -O ${name}_split.bam 
 
-    samtools index ${$name}_split.bam 
+    samtools index ${name}_split.bam 
     """
 }
 
