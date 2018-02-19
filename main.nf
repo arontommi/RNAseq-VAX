@@ -102,7 +102,7 @@ else if ( !params.download_gtf ){
 if ( params.fasta ){
     fasta = file(params.fasta)
     fai = file(params.fasta + '.fai')
-    dict = file(params.fasta + '.dict')
+    dict = file(params.fasta.take(fasta.lastIndexOf('.')) + '.dict')
     if( !fasta.exists() ) exit 1, "Fasta file not found: ${params.fasta}"
 }
 
