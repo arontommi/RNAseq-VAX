@@ -58,6 +58,11 @@ params.download_fasta = false
 params.download_gtf = false
 
 
+params.rglb = '1'
+params.rgpl = 'lib1'
+params.rgpu = 'illumina'
+
+
 wherearemyfiles = file("$baseDir/assets/where_are_my_files.txt")
 
 // Custom trimming options
@@ -189,7 +194,7 @@ process fastqc {
     output:
     file "*_fastqc.{zip,html}" into fastqc_results
     file '.command.out' into fastqc_stdout
-
+    val name into samplename
     script:
     """
     fastqc -q $reads
@@ -304,6 +309,41 @@ if(params.aligner == 'star'){
         .flatMap {  logs, bams -> bams }
     .into { bam_count; bam_rseqc; bam_preseq; bam_markduplicates; bam_featurecounts; bam_stringtieFPKM; bam_geneBodyCoverage }
 }
+/*
+ * Readgroups added 
+ */
+process addReadGroups{ 
+    tag "Readgroups added"
+
+    input:
+    file bam_markduplicates
+    val name from samplename
+    rglb from params.rglb
+    rgpl from params.rgpl
+    rgpu from params.rgpu
+    output:
+    file "${bam_markduplicates.baseName}.RG.bam" into bam_md
+
+
+    script:
+    if( task.memory == null ){
+        log.info "[Picard MarkDuplicates] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this."
+        avail_mem = 3
+    } else {
+        avail_mem = task.memory.toGiga()
+    }
+    """
+    java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar AddOrReplaceReadGroups \\
+        I= $bam_markduplicates \\
+        O= ${bam_markduplicates.baseName}.RG.bam \\
+        RGLB=$rglb \\
+        RGPL=$rgpl \\
+        RGPU=$rgpu \\
+        RGSM=$name
+    """
+}
+
+
 
 /*
  * STEP 6 Mark duplicates
@@ -360,7 +400,7 @@ process splitNCigarReads {
 
     output:
     file "*.bam" into splitNCigar_bam
-    file "*.bai" into splitNCigar_bam_bai
+    file "*split.bai" into splitNCigar_bam_bai
 
     script:
 
@@ -374,8 +414,23 @@ process splitNCigarReads {
     """
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
- * STEP 7 SplitNCigarReads
+ * STEP 7 Haplotypecaller
  */
 process haplotypeCaller {
     tag "$splitNCigar_bam.baseName"

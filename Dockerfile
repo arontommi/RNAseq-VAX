@@ -70,7 +70,8 @@ RUN curl -fsSL https://github.com/samtools/samtools/releases/download/1.3.1/samt
     tar xvjf /opt/samtools-1.3.1.tar.bz2 -C /opt/ && \
     cd /opt/samtools-1.3.1 && \
     make && \
-    make install
+    make install && \
+    rm /opt/samtools-1.3.1.tar.bz2
 
 
 # Create root directories for common Swedish HPC systems
