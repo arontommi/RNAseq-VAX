@@ -360,8 +360,7 @@ process splitNCigarReads {
     -O ${bam_md}_split.bam \\
     -RF ReassignOneMappingQuality \\
     -RMQF 255 \\
-    -RMQT 60 \\
-    -U ALLOW_N_CIGAR_READS
+    -RMQT 60
     """
 }
 
