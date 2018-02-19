@@ -102,10 +102,23 @@ else if ( !params.download_gtf ){
 if ( params.fasta ){
     fasta = file(params.fasta)
     fai = file(params.fasta + '.fai')
-    dict = file(params.fasta.name.replaceFirst(~/\.[^\.]+$/, '.dict'))
+    dict = file(params.fasta - '.fa'+'.dict')
     if( !fasta.exists() ) exit 1, "Fasta file not found: ${params.fasta}"
 }
+if ( params.fasta ){
+    if ( params.fasta.endsWith('.fa')) {
+        fasta = file(params.fasta)
+        fai = file(params.fasta + '.fai')
+        dict = file(params.fasta - '.fa'+'.dict')
+    }
+    else if ( params.fasta.endsWith('.fasta')) {
+        fasta = file(params.fasta)
+        fai = file(params.fasta + '.fai')
+        dict = file(params.fasta - '.fasta'+'.dict')
+    }
 
+
+}
 
 if( workflow.profile == 'uppmax' || workflow.profile == 'uppmax-modules' || workflow.profile == 'uppmax-devel' ){
     if ( !params.project ) exit 1, "No UPPMAX project ID found! Use --project"
