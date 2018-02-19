@@ -384,7 +384,6 @@ process haplotypeCaller {
     file splitNCigar_bam
     file splitNCigar_bam_bai
     file fasta
-    file fasta
     file fai
     file dict
 
