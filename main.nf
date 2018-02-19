@@ -319,7 +319,7 @@ process markDuplicates {
     output:
     file "${bam_markduplicates.baseName}.markDups.bam" into bam_md
     file "${bam_markduplicates.baseName}.markDups_metrics.txt" into picard_results
-    file "${bam_markduplicates.baseName}.bam.bai"
+    file "${bam_markduplicates.baseName}.bam.bai" into bam_md_bai
     file '.command.log' into markDuplicates_stdout
 
     script:
@@ -349,16 +349,18 @@ process markDuplicates {
  * STEP 7 SplitNCigarReads
  */
 process splitNCigarReads {
-    tag "${bam_md - '.splitncig'}"
+    tag "$name"
 
     input:
-    file bam_md
+    set val(name), file(bam_md) from bam_md
+    file bam_md_bai
     file fasta
     file fai
     file dict
 
     output:
     file "*.bam" into splitNCigar_bam
+    file "*.bam.bai" into splitNCigar_bam_bai
 
     script:
 
@@ -366,7 +368,9 @@ process splitNCigarReads {
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
     -R $fasta \\
     -I $bam_md \\
-    -O ${bam_md}_split.bam 
+    -O ${$name}_split.bam 
+
+    samtools index ${$name}_split.bam 
     """
 }
 
@@ -374,10 +378,11 @@ process splitNCigarReads {
  * STEP 7 SplitNCigarReads
  */
 process haplotypeCaller {
-    tag "${bam_md - '.vcf'}"
+    tag "$name"
 
     input:
-    file splitNCigar_bam
+    set val(name), file(bam_md) from splitNCigar_bam
+    file splitNCigar_bam_bai
     file fasta
     file fasta
     file fai
