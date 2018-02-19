@@ -354,15 +354,14 @@ process splitNCigarReads {
     script:
 
     """
-    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar -T SplitNCigarReads \\
+    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
         -R $fasta \\
         -I $bam_md \\ 
         -o ${bam_md}_split.bam \\
         -rf ReassignOneMappingQuality \\
         -RMQF 255 \\
         -RMQT 60 \\
-        -U ALLOW_N_CIGAR_READS 
-
+        -U ALLOW_N_CIGAR_READS
     """
 }
 
@@ -380,7 +379,7 @@ process haplotypeCaller {
     script:
 
     """
-    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar -T HaplotypeCaller \\
+    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar HaplotypeCaller \\
         -R $fasta \\
         -I $splitNCigar_bam \\ 
         -dontUseSoftClippedBases \\
