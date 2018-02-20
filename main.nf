@@ -133,6 +133,9 @@ else if (params.deduped_bam) {
     Channel
         .watchPath( '${params.outdir}/markDuplicates/*.bam' )
         .into {bam_md}
+        .watchPath( '${params.outdir}/markDuplicates/*.bam.bai' )
+        .into {bam_md_bai}
+
 
 }
 /*
@@ -363,7 +366,7 @@ if (params.reads){
         """
     }
 }
-if (bam_md){
+if (bam_md && bam_md_bai){
 
 /*
  * Readgroups added 
