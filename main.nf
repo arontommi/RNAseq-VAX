@@ -364,6 +364,7 @@ if (params.reads){
     }
 }
 if (bam_md){
+
 /*
  * Readgroups added 
  */
@@ -372,7 +373,6 @@ if (bam_md){
 
         input:
         file bam_md
-        val samplename
         val rglb from params.rglb
         val rgpl from params.rgpl
         val rgpu from params.rgpu
@@ -394,7 +394,7 @@ if (bam_md){
             RGLB=$rglb \\
             RGPL=$rgpl \\
             RGPU=$rgpu \\
-            RGSM=$samplename
+            RGSM=${bam_md.baseName}
         """
     }
     /*
