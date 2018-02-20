@@ -375,7 +375,7 @@ process markDuplicates {
         REMOVE_DUPLICATES=false \\
         ASSUME_SORTED=true \\
         PROGRAM_RECORD_ID='null' \\
-        VALIDATION_STRINGENCY=LENIENTq
+        VALIDATION_STRINGENCY=LENIENT
 
     # Print version number to standard out
     echo "File name: $rg_bam Picard version "\$(java -Xmx2g -jar \$PICARD_HOME/picard.jar  MarkDuplicates --version 2>&1)
