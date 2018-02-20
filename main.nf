@@ -441,10 +441,9 @@ process haplotypeCaller {
     """
 }
 
-java -jar GenomeAnalysisTK.jar -T VariantFiltration -R hg_19.fasta -V input.vcf -window 35 -cluster 3 -filterName FS -filter "FS > 30.0" -filterName QD -filter "QD < 2.0" -o output.vcf 
 
 /*
- * STEP 7 Haplotypecaller
+ * STEP 8 varfiltering
  */
 process varfiltering {
     tag "$vcf.baseName"
