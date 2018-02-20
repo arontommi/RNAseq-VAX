@@ -131,6 +131,6 @@ if ( params.reads) {
 }
 else if (params.deduped_bam && params.outdir) {
     Channel
-        .fromFilePairs('${params.outdir}/markDuplicates/*')
+        .fromPath('${params.outdir}/markDuplicates/*')
         .println()
 }
