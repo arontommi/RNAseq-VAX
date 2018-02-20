@@ -193,293 +193,297 @@ if(params.aligner == 'star' && !params.star_index && params.fasta){
 /*
  * STEP 1 - FastQC
  */
-process fastqc {
-    tag "$name"
-    publishDir "${params.outdir}/fastqc", mode: 'copy',
-        saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
+if (read_files_fastqc){
+        process fastqc {
+        tag "$name"
+        publishDir "${params.outdir}/fastqc", mode: 'copy',
+            saveAs: {filename -> filename.indexOf(".zip") > 0 ? "zips/$filename" : "$filename"}
 
-    input:
-    set val(name), file(reads) from read_files_fastqc
+        input:
+        set val(name), file(reads) from read_files_fastqc
 
-    output:
-    file "*_fastqc.{zip,html}" into fastqc_results
-    file '.command.out' into fastqc_stdout
-    val name into samplename
-    script:
-    """
-    fastqc -q $reads
-    fastqc --version
-    """
-}
-
-process trim_galore {
-    tag "$name"
-    publishDir "${params.outdir}/trim_galore", mode: 'copy',
-        saveAs: {filename ->
-            if (filename.indexOf("_fastqc") > 0) "FastQC/$filename"
-            else if (filename.indexOf("trimming_report.txt") > 0) "logs/$filename"
-            else if (!params.saveTrimmed && filename == "where_are_my_files.txt") filename
-            else if (params.saveTrimmed && filename != "where_are_my_files.txt") filename
-            else null
-        }
-
-    input:
-    set val(name), file(reads) from read_files_trimming
-    file wherearemyfiles
-
-    output:
-    file "*fq.gz" into trimmed_reads
-    file "*trimming_report.txt" into trimgalore_results, trimgalore_logs
-    file "*_fastqc.{zip,html}" into trimgalore_fastqc_reports
-    file "where_are_my_files.txt"
-
-
-    script:
-    c_r1 = clip_r1 > 0 ? "--clip_r1 ${clip_r1}" : ''
-    c_r2 = clip_r2 > 0 ? "--clip_r2 ${clip_r2}" : ''
-    tpc_r1 = three_prime_clip_r1 > 0 ? "--three_prime_clip_r1 ${three_prime_clip_r1}" : ''
-    tpc_r2 = three_prime_clip_r2 > 0 ? "--three_prime_clip_r2 ${three_prime_clip_r2}" : ''
-    if (params.singleEnd) {
+        output:
+        file "*_fastqc.{zip,html}" into fastqc_results
+        file '.command.out' into fastqc_stdout
+        val name into samplename
+        script:
         """
-        trim_galore --fastqc --gzip $c_r1 $tpc_r1 $reads
-        """
-    } else {
-        """
-        trim_galore --paired --fastqc --gzip $c_r1 $c_r2 $tpc_r1 $tpc_r2 $reads
+        fastqc -q $reads
+        fastqc --version
         """
     }
-}
 
-/*
- * STEP 3 - align with STAR
- */
-// Function that checks the alignment rate of the STAR output
-// and returns true if the alignment passed and otherwise false
-skipped_poor_alignment = []
-def check_log(logs) {
-    def percent_aligned = 0;
-    logs.eachLine { line ->
-        if ((matcher = line =~ /Uniquely mapped reads %\s*\|\s*([\d\.]+)%/)) {
-            percent_aligned = matcher[0][1]
-        }
-    }
-    logname = logs.getBaseName() - 'Log.final'
-    if(percent_aligned.toFloat() <= '5'.toFloat() ){
-        log.info "#################### VERY POOR ALIGNMENT RATE! IGNORING FOR FURTHER DOWNSTREAM ANALYSIS! ($logname)    >> ${percent_aligned}% <<"
-        skipped_poor_alignment << logname
-        return false
-    } else {
-        log.info "          Passed alignment > star ($logname)   >> ${percent_aligned}% <<"
-        return true
-    }
-}
-if(params.aligner == 'star'){
-    hisat_stdout = Channel.from(false)
-    process star {
-        tag "$prefix"
-        publishDir "${params.outdir}/STAR", mode: 'copy',
+    process trim_galore {
+        tag "$name"
+        publishDir "${params.outdir}/trim_galore", mode: 'copy',
             saveAs: {filename ->
-                if (filename.indexOf(".bam") == -1) "logs/$filename"
-                else if (!params.saveAlignedIntermediates && filename == "where_are_my_files.txt") filename
-                else if (params.saveAlignedIntermediates && filename != "where_are_my_files.txt") filename
+                if (filename.indexOf("_fastqc") > 0) "FastQC/$filename"
+                else if (filename.indexOf("trimming_report.txt") > 0) "logs/$filename"
+                else if (!params.saveTrimmed && filename == "where_are_my_files.txt") filename
+                else if (params.saveTrimmed && filename != "where_are_my_files.txt") filename
                 else null
             }
 
         input:
-        file reads from trimmed_reads
-        file index from star_index.collect()
-        file gtf from gtf_star.collect()
+        set val(name), file(reads) from read_files_trimming
         file wherearemyfiles
 
         output:
-        set file("*Log.final.out"), file ('*.bam') into star_aligned
-        file "*.out" into alignment_logs
-        file "*SJ.out.tab"
-        file "*Log.out" into star_log
+        file "*fq.gz" into trimmed_reads
+        file "*trimming_report.txt" into trimgalore_results, trimgalore_logs
+        file "*_fastqc.{zip,html}" into trimgalore_fastqc_reports
         file "where_are_my_files.txt"
 
+
         script:
-        prefix = reads[0].toString() - ~/(_R1)?(_trimmed)?(_val_1)?(\.fq)?(\.fastq)?(\.gz)?$/
+        c_r1 = clip_r1 > 0 ? "--clip_r1 ${clip_r1}" : ''
+        c_r2 = clip_r2 > 0 ? "--clip_r2 ${clip_r2}" : ''
+        tpc_r1 = three_prime_clip_r1 > 0 ? "--three_prime_clip_r1 ${three_prime_clip_r1}" : ''
+        tpc_r2 = three_prime_clip_r2 > 0 ? "--three_prime_clip_r2 ${three_prime_clip_r2}" : ''
+        if (params.singleEnd) {
+            """
+            trim_galore --fastqc --gzip $c_r1 $tpc_r1 $reads
+            """
+        } else {
+            """
+            trim_galore --paired --fastqc --gzip $c_r1 $c_r2 $tpc_r1 $tpc_r2 $reads
+            """
+        }
+    }
+
+    /*
+     * STEP 3 - align with STAR
+     */
+    // Function that checks the alignment rate of the STAR output
+    // and returns true if the alignment passed and otherwise false
+    skipped_poor_alignment = []
+    def check_log(logs) {
+        def percent_aligned = 0;
+        logs.eachLine { line ->
+            if ((matcher = line =~ /Uniquely mapped reads %\s*\|\s*([\d\.]+)%/)) {
+                percent_aligned = matcher[0][1]
+            }
+        }
+        logname = logs.getBaseName() - 'Log.final'
+        if(percent_aligned.toFloat() <= '5'.toFloat() ){
+            log.info "#################### VERY POOR ALIGNMENT RATE! IGNORING FOR FURTHER DOWNSTREAM ANALYSIS! ($logname)    >> ${percent_aligned}% <<"
+            skipped_poor_alignment << logname
+            return false
+        } else {
+            log.info "          Passed alignment > star ($logname)   >> ${percent_aligned}% <<"
+            return true
+        }
+    }
+    if(params.aligner == 'star'){
+        hisat_stdout = Channel.from(false)
+        process star {
+            tag "$prefix"
+            publishDir "${params.outdir}/STAR", mode: 'copy',
+                saveAs: {filename ->
+                    if (filename.indexOf(".bam") == -1) "logs/$filename"
+                    else if (!params.saveAlignedIntermediates && filename == "where_are_my_files.txt") filename
+                    else if (params.saveAlignedIntermediates && filename != "where_are_my_files.txt") filename
+                    else null
+                }
+
+            input:
+            file reads from trimmed_reads
+            file index from star_index.collect()
+            file gtf from gtf_star.collect()
+            file wherearemyfiles
+
+            output:
+            set file("*Log.final.out"), file ('*.bam') into star_aligned
+            file "*.out" into alignment_logs
+            file "*SJ.out.tab"
+            file "*Log.out" into star_log
+            file "where_are_my_files.txt"
+
+            script:
+            prefix = reads[0].toString() - ~/(_R1)?(_trimmed)?(_val_1)?(\.fq)?(\.fastq)?(\.gz)?$/
+            """
+            STAR --genomeDir $index \\
+                --sjdbGTFfile $gtf \\
+                --readFilesIn $reads  \\
+                --runThreadN ${task.cpus} \\
+                --twopassMode Basic \\
+                --outWigType bedGraph \\
+                --outSAMtype BAM SortedByCoordinate \\
+                --readFilesCommand zcat \\
+                --runDirPerm All_RWX \\
+                --outFileNamePrefix $prefix 
+            """
+        }
+        // Filter removes all 'aligned' channels that fail the check
+        star_aligned
+            .filter { logs, bams -> check_log(logs) }
+            .flatMap {  logs, bams -> bams }
+        .into { bam_count; bam_rseqc; bam_preseq; bam_markduplicates; bam_featurecounts; bam_stringtieFPKM; bam_geneBodyCoverage }
+    }
+
+
+    /*
+     * STEP 6 Mark duplicates
+     */
+    process markDuplicates {
+        tag "${bam_markduplicates}"
+        publishDir "${params.outdir}/markDuplicates", mode: 'copy',
+            saveAs: {filename -> filename.indexOf("_metrics.txt") > 0 ? "metrics/$filename" : "$filename"}
+
+        input:
+        file bam_markduplicates
+
+        output:
+        file "${bam_markduplicates.baseName}.markDups.bam" into bam_md
+        file "${bam_markduplicates.baseName}.markDups_metrics.txt" into picard_results
+        file "${bam_markduplicates.baseName}.bam.bai" into bam_md_bai
+        file '.command.log' into markDuplicates_stdout
+
+        script:
+        if( task.memory == null ){
+            log.info "[Picard MarkDuplicates] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this."
+            avail_mem = 3
+        } else {
+            avail_mem = task.memory.toGiga()
+        }
         """
-        STAR --genomeDir $index \\
-            --sjdbGTFfile $gtf \\
-            --readFilesIn $reads  \\
-            --runThreadN ${task.cpus} \\
-            --twopassMode Basic \\
-            --outWigType bedGraph \\
-            --outSAMtype BAM SortedByCoordinate \\
-            --readFilesCommand zcat \\
-            --runDirPerm All_RWX \\
-            --outFileNamePrefix $prefix 
+        java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar MarkDuplicates \\
+            INPUT=$bam_markduplicates \\
+            OUTPUT=${bam_markduplicates.baseName}.markDups.bam \\
+            METRICS_FILE=${bam_markduplicates.baseName}.markDups_metrics.txt \\
+            REMOVE_DUPLICATES=false \\
+            ASSUME_SORTED=true \\
+            PROGRAM_RECORD_ID='null' \\
+            VALIDATION_STRINGENCY=LENIENT
+
+        # Print version number to standard out
+        echo "File name: $bam_markduplicates Picard version "\$(java -Xmx2g -jar \$PICARD_HOME/picard.jar  MarkDuplicates --version 2>&1)
+        samtools index $bam_markduplicates
         """
     }
-    // Filter removes all 'aligned' channels that fail the check
-    star_aligned
-        .filter { logs, bams -> check_log(logs) }
-        .flatMap {  logs, bams -> bams }
-    .into { bam_count; bam_rseqc; bam_preseq; bam_markduplicates; bam_featurecounts; bam_stringtieFPKM; bam_geneBodyCoverage }
 }
-
-
-/*
- * STEP 6 Mark duplicates
- */
-process markDuplicates {
-    tag "${bam_markduplicates}"
-    publishDir "${params.outdir}/markDuplicates", mode: 'copy',
-        saveAs: {filename -> filename.indexOf("_metrics.txt") > 0 ? "metrics/$filename" : "$filename"}
-
-    input:
-    file bam_markduplicates
-
-    output:
-    file "${bam_markduplicates.baseName}.markDups.bam" into bam_md
-    file "${bam_markduplicates.baseName}.markDups_metrics.txt" into picard_results
-    file "${bam_markduplicates.baseName}.bam.bai" into bam_md_bai
-    file '.command.log' into markDuplicates_stdout
-
-    script:
-    if( task.memory == null ){
-        log.info "[Picard MarkDuplicates] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this."
-        avail_mem = 3
-    } else {
-        avail_mem = task.memory.toGiga()
-    }
-    """
-    java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar MarkDuplicates \\
-        INPUT=$bam_markduplicates \\
-        OUTPUT=${bam_markduplicates.baseName}.markDups.bam \\
-        METRICS_FILE=${bam_markduplicates.baseName}.markDups_metrics.txt \\
-        REMOVE_DUPLICATES=false \\
-        ASSUME_SORTED=true \\
-        PROGRAM_RECORD_ID='null' \\
-        VALIDATION_STRINGENCY=LENIENT
-
-    # Print version number to standard out
-    echo "File name: $bam_markduplicates Picard version "\$(java -Xmx2g -jar \$PICARD_HOME/picard.jar  MarkDuplicates --version 2>&1)
-    samtools index $bam_markduplicates
-    """
-}
+if (bam_markduplicates){
 /*
  * Readgroups added 
  */
-process addReadGroups{ 
-    tag "Readgroups added"
+    process addReadGroups{ 
+        tag "Readgroups added"
 
-    input:
-    file bam_md
-    val samplename
-    val rglb from params.rglb
-    val rgpl from params.rgpl
-    val rgpu from params.rgpu
-    output:
-    file "*.RG.bam" into rg_bam
+        input:
+        file bam_md
+        val samplename
+        val rglb from params.rglb
+        val rgpl from params.rgpl
+        val rgpu from params.rgpu
+        output:
+        file "*.RG.bam" into rg_bam
 
 
-    script:
-    if( task.memory == null ){
-        log.info "[Picard MarkDuplicates] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this."
-        avail_mem = 3
-    } else {
-        avail_mem = task.memory.toGiga()
+        script:
+        if( task.memory == null ){
+            log.info "[Picard MarkDuplicates] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this."
+            avail_mem = 3
+        } else {
+            avail_mem = task.memory.toGiga()
+        }
+        """
+        java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar AddOrReplaceReadGroups \\
+            I= $bam_md \\
+            O= ${bam_md.baseName}.RG.bam \\
+            RGLB=$rglb \\
+            RGPL=$rgpl \\
+            RGPU=$rgpu \\
+            RGSM=$samplename
+        """
     }
-    """
-    java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar AddOrReplaceReadGroups \\
-        I= $bam_md \\
-        O= ${bam_md.baseName}.RG.bam \\
-        RGLB=$rglb \\
-        RGPL=$rgpl \\
-        RGPU=$rgpu \\
-        RGSM=$samplename
-    """
-}
-/*
- * STEP 7 SplitNCigarReads
- */
-process splitNCigarReads {
-    tag "$rg_bam"
+    /*
+     * STEP 7 SplitNCigarReads
+     */
+    process splitNCigarReads {
+        tag "$rg_bam"
 
-    input:
-    file rg_bam
-    file bam_md_bai
-    file fasta
-    file fai
-    file dict
+        input:
+        file rg_bam
+        file bam_md_bai
+        file fasta
+        file fai
+        file dict
 
-    output:
-    file "*.bam" into splitNCigar_bam
-    file "*split.bai" into splitNCigar_bam_bai
+        output:
+        file "*.bam" into splitNCigar_bam
+        file "*split.bai" into splitNCigar_bam_bai
 
-    script:
+        script:
 
-    """
-    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
-    -R $fasta \\
-    -I $bam_md \\
-    -O ${rg_bam.baseName}_split.bam 
+        """
+        java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
+        -R $fasta \\
+        -I $bam_md \\
+        -O ${rg_bam.baseName}_split.bam 
 
-    samtools index ${bam_md.baseName}_split.bam 
-    """
-}
+        samtools index ${bam_md.baseName}_split.bam 
+        """
+    }
 
-/*
- * STEP 7 Haplotypecaller
- */
-process haplotypeCaller {
-    tag "$splitNCigar_bam.baseName"
-    publishDir "${params.outdir}/haplotypeCaller", mode: 'copy'
+    /*
+     * STEP 7 Haplotypecaller
+     */
+    process haplotypeCaller {
+        tag "$splitNCigar_bam.baseName"
+        publishDir "${params.outdir}/haplotypeCaller", mode: 'copy'
 
 
-    input:
-    file splitNCigar_bam
-    file splitNCigar_bam_bai
-    file fasta
-    file fai
-    file dict
+        input:
+        file splitNCigar_bam
+        file splitNCigar_bam_bai
+        file fasta
+        file fai
+        file dict
 
-    output:
-    file "*.vcf" into vcf
-    script:
+        output:
+        file "*.vcf" into vcf
+        script:
 
-    """
-    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar HaplotypeCaller \\
-    -R $fasta \\
-    -I $splitNCigar_bam \\
-    --dont-use-soft-clipped-bases \\
-    --standard-min-confidence-threshold-for-calling 20.0 \\
-    -O ${splitNCigar_bam.baseName}.vcf
-    """
-}
-
-
-/*
- * STEP 8 varfiltering
- */
-process varfiltering {
-    tag "$vcf.baseName"
-    publishDir "${params.outdir}/VariantFiltration", mode: 'copy'
+        """
+        java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar HaplotypeCaller \\
+        -R $fasta \\
+        -I $splitNCigar_bam \\
+        --dont-use-soft-clipped-bases \\
+        --standard-min-confidence-threshold-for-calling 20.0 \\
+        -O ${splitNCigar_bam.baseName}.vcf
+        """
+    }
 
 
-    input:
-    file vcf
-    file fasta
-    file fai
-    file dict
+    /*
+     * STEP 8 varfiltering
+     */
+    process varfiltering {
+        tag "$vcf.baseName"
+        publishDir "${params.outdir}/VariantFiltration", mode: 'copy'
 
-    output:
-    file "*.vcf" into filtered_vcf
-    script:
 
-    """
-    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar VariantFiltration \\
-    -R $fasta \\
-    -V $vcf \\
-    -window 35 \\
-    -cluster 3 \\
-    -filter-name FS \\
-    -filter "FS > 30.0" \\
-    -filter-name QD \\
-    -filter "QD < 2.0"  \\
-    -O ${vcf.baseName}.sorted.vcf 
-    """
+        input:
+        file vcf
+        file fasta
+        file fai
+        file dict
+
+        output:
+        file "*.vcf" into filtered_vcf
+        script:
+
+        """
+        java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar VariantFiltration \\
+        -R $fasta \\
+        -V $vcf \\
+        -window 35 \\
+        -cluster 3 \\
+        -filter-name FS \\
+        -filter "FS > 30.0" \\
+        -filter-name QD \\
+        -filter "QD < 2.0"  \\
+        -O ${vcf.baseName}.sorted.vcf 
+        """
+    }
 }
