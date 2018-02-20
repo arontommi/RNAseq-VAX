@@ -132,7 +132,7 @@ if ( params.reads) {
 }
 else if (params.deduped_bam) {
     Channel
-        .fromFilePairs(params.deduped_bam_location)
+        .fromPath(params.deduped_bam_location)
         .into(bam_md)
         .println()
 }
