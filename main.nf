@@ -133,7 +133,7 @@ if ( params.reads) {
 else if (!params.reads && params.deduped_bam ) {
     Channel
         .fromPath(params.bamfolder+'*.bam')
-        .into(bam_md)
+        .into{bam_md}
 }
 /*
  * PREPROCESSING - Download GTF
