@@ -371,6 +371,11 @@ if ( bams || bam_md) {
             val name
             file bam_md
             file bam_md_bai
+
+            script:    
+            """
+            echo "extracting ${bam_md} from results file"
+            """
     }
 
 
