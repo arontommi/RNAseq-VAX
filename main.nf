@@ -130,7 +130,7 @@ if ( params.reads) {
             exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard\nIf this is single-end data, please specify --singleEnd on the command line." }
         .into { read_files_fastqc; read_files_trimming }
 }
-else if (!params.reads && ) {
+else if (!params.reads && params.deduped_bam ) {
     Channel
         .fromPath(params.bamfolder+'*.bam')
         .into(bam_md)
@@ -395,7 +395,7 @@ if (bam_md) {
             RGPL=$rgpl \\
             RGPU=$rgpu \\
             RGSM=${bam_md.baseName}
-            
+
         samtools index ${bam_md.baseName}.RG.bam
 
         """
