@@ -133,7 +133,7 @@ if ( params.reads) {
 else if (!params.reads && params.deduped_bam ) {
     Channel
         .fromPath(params.bamfolder+'*.bam')
-        .into{bam_md}
+        .set{bam_md}
 }
 /*
  * PREPROCESSING - Download GTF
@@ -422,10 +422,10 @@ if (bam_md) {
         """
         java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
         -R $fasta \\
-        -I $bam_md \\
+        -I $rg_bam \\
         -O ${rg_bam.baseName}_split.bam 
 
-        samtools index ${bam_md.baseName}_split.bam 
+        samtools index ${rg_bam.baseName}_split.bam 
         """
     }
 
