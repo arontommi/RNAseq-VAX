@@ -408,7 +408,7 @@ if (bam_md) {
 
         input:
         file rg_bam
-        file bam_md_bai
+        file rg_bam_bai
         file fasta
         file fai
         file dict
