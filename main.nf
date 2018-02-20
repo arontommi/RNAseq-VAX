@@ -363,7 +363,7 @@ if (params.reads){
     }
 }
 if ( bams || bam_md) {
-    if (bams)
+    if (bams) {
         process getbams {
             input:
             val(name) file(bam_md) file(bam_md_bai) from bams
@@ -376,6 +376,7 @@ if ( bams || bam_md) {
             """
             echo "extracting ${bam_md} from results file"
             """
+        }
     }
 
 
