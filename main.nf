@@ -131,10 +131,8 @@ if ( params.reads) {
 }
 else if (params.deduped_bam) {
     Channel
-        .fromFilePairs('${params.outdir}/markDuplicates/*.{bam,bam.bai}')
-        .println()
-
-
+        .fromFilePairs('${params.outdir}/markDuplicates/*.{bam,bam.bai}', flat: true)
+        .into { name,bam_md,bam_md_bai }
 
 }
 /*
