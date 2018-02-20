@@ -412,26 +412,13 @@ process splitNCigarReads {
     """
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
  * STEP 7 Haplotypecaller
  */
 process haplotypeCaller {
     tag "$splitNCigar_bam.baseName"
+    publishDir "${params.outdir}/haplotypeCaller", mode: 'copy'
+
 
     input:
     file splitNCigar_bam
