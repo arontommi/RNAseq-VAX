@@ -46,7 +46,8 @@ def helpMessage() {
 
 
 
-params.reads = "data/*{1,2}.fastq.gz"
+params.reads = false
+params.deduped_bam = false 
 params.singleEnd = false
 params.outdir = './results'
 params.genome = false
@@ -122,7 +123,14 @@ if( workflow.profile == 'uppmax' || workflow.profile == 'uppmax-modules' || work
 }
 Channel
     .fromFilePairs( params.reads, size: params.singleEnd ? 1 : 2 )
-    .ifEmpty { exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard!\nIf this is single-end data, please specify --singleEnd on the command line." }
+    .ifEmpty { 
+        exit 1, "Cannot find any reads matching: ${params.reads}
+        \nNB: Path needs to be enclosed in quotes!
+        \nNB: Path requires at least one * wildcard
+        \nIf this is single-end data, please specify --singleEnd on the command line." }
+    .ifEmpty{
+        
+    }
     .into { read_files_fastqc; read_files_trimming }
 
 /*
@@ -309,6 +317,47 @@ if(params.aligner == 'star'){
         .flatMap {  logs, bams -> bams }
     .into { bam_count; bam_rseqc; bam_preseq; bam_markduplicates; bam_featurecounts; bam_stringtieFPKM; bam_geneBodyCoverage }
 }
+
+
+/*
+ * STEP 6 Mark duplicates
+ */
+process markDuplicates {
+    tag "${bam_markduplicates}"
+    publishDir "${params.outdir}/markDuplicates", mode: 'copy',
+        saveAs: {filename -> filename.indexOf("_metrics.txt") > 0 ? "metrics/$filename" : "$filename"}
+
+    input:
+    file bam_markduplicates
+
+    output:
+    file "${bam_markduplicates.baseName}.markDups.bam" into bam_md
+    file "${bam_markduplicates.baseName}.markDups_metrics.txt" into picard_results
+    file "${bam_markduplicates.baseName}.bam.bai" into bam_md_bai
+    file '.command.log' into markDuplicates_stdout
+
+    script:
+    if( task.memory == null ){
+        log.info "[Picard MarkDuplicates] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this."
+        avail_mem = 3
+    } else {
+        avail_mem = task.memory.toGiga()
+    }
+    """
+    java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar MarkDuplicates \\
+        INPUT=$bam_markduplicates \\
+        OUTPUT=${bam_markduplicates.baseName}.markDups.bam \\
+        METRICS_FILE=${bam_markduplicates.baseName}.markDups_metrics.txt \\
+        REMOVE_DUPLICATES=false \\
+        ASSUME_SORTED=true \\
+        PROGRAM_RECORD_ID='null' \\
+        VALIDATION_STRINGENCY=LENIENT
+
+    # Print version number to standard out
+    echo "File name: $bam_markduplicates Picard version "\$(java -Xmx2g -jar \$PICARD_HOME/picard.jar  MarkDuplicates --version 2>&1)
+    samtools index $bam_markduplicates
+    """
+}
 /*
  * Readgroups added 
  */
@@ -316,7 +365,7 @@ process addReadGroups{
     tag "Readgroups added"
 
     input:
-    file bam_markduplicates
+    file bam_md
     val samplename
     val rglb from params.rglb
     val rgpl from params.rgpl
@@ -334,63 +383,22 @@ process addReadGroups{
     }
     """
     java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar AddOrReplaceReadGroups \\
-        I= $bam_markduplicates \\
-        O= ${bam_markduplicates.baseName}.RG.bam \\
+        I= $bam_md \\
+        O= ${bam_md.baseName}.RG.bam \\
         RGLB=$rglb \\
         RGPL=$rgpl \\
         RGPU=$rgpu \\
         RGSM=$samplename
     """
 }
-
-/*
- * STEP 6 Mark duplicates
- */
-process markDuplicates {
-    tag "${rg_bam}"
-    publishDir "${params.outdir}/markDuplicates", mode: 'copy',
-        saveAs: {filename -> filename.indexOf("_metrics.txt") > 0 ? "metrics/$filename" : "$filename"}
-
-    input:
-    file rg_bam
-
-    output:
-    file "${rg_bam.baseName}.markDups.bam" into bam_md
-    file "${rg_bam.baseName}.markDups_metrics.txt" into picard_results
-    file "${rg_bam.baseName}.bam.bai" into bam_md_bai
-    file '.command.log' into markDuplicates_stdout
-
-    script:
-    if( task.memory == null ){
-        log.info "[Picard MarkDuplicates] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this."
-        avail_mem = 3
-    } else {
-        avail_mem = task.memory.toGiga()
-    }
-    """
-    java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar MarkDuplicates \\
-        INPUT=$rg_bam \\
-        OUTPUT=${rg_bam.baseName}.markDups.bam \\
-        METRICS_FILE=${rg_bam.baseName}.markDups_metrics.txt \\
-        REMOVE_DUPLICATES=false \\
-        ASSUME_SORTED=true \\
-        PROGRAM_RECORD_ID='null' \\
-        VALIDATION_STRINGENCY=LENIENT
-
-    # Print version number to standard out
-    echo "File name: $rg_bam Picard version "\$(java -Xmx2g -jar \$PICARD_HOME/picard.jar  MarkDuplicates --version 2>&1)
-    samtools index $rg_bam
-    """
-}
-
 /*
  * STEP 7 SplitNCigarReads
  */
 process splitNCigarReads {
-    tag "$bam_md"
+    tag "$rg_bam"
 
     input:
-    file bam_md
+    file rg_bam
     file bam_md_bai
     file fasta
     file fai
@@ -406,7 +414,7 @@ process splitNCigarReads {
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
     -R $fasta \\
     -I $bam_md \\
-    -O ${bam_md.baseName}_split.bam 
+    -O ${rg_bam.baseName}_split.bam 
 
     samtools index ${bam_md.baseName}_split.bam 
     """
@@ -466,6 +474,10 @@ process varfiltering {
     -V $vcf \\
     -window 35 \\
     -cluster 3 \\
+    -filter-name FS \\
+    -filter "FS > 30.0" \\
+    -filter-name QD \\
+    -filter "QD < 2.0"  \\
     -O ${vcf.baseName}.sorted.vcf 
     """
 }
