@@ -363,7 +363,7 @@ if (params.reads){
         """
     }
 }
-if (bam_markduplicates){
+if (bam_md){
 /*
  * Readgroups added 
  */
