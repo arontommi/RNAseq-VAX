@@ -415,7 +415,7 @@ if (bam_md) {
 
         output:
         file "*.bam" into splitNCigar_bam
-        file "*split.bai" into splitNCigar_bam_bai
+        file "*bam.bai" into splitNCigar_bam_bai
 
         script:
 
