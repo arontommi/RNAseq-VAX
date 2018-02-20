@@ -50,6 +50,7 @@ params.reads = false
 params.deduped_bam = false 
 params.singleEnd = false
 params.outdir = './results'
+params.deduped_bam_location = './results/markDuplicates/*.{bam,bam.bai}' 
 params.genome = false
 params.project = false
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
@@ -129,8 +130,8 @@ if ( params.reads) {
             exit 1, "Cannot find any reads matching: ${params.reads}\nNB: Path needs to be enclosed in quotes!\nNB: Path requires at least one * wildcard\nIf this is single-end data, please specify --singleEnd on the command line." }
         .into { read_files_fastqc; read_files_trimming }
 }
-else if (params.deduped_bam && params.outdir) {
+else if (params.deduped_bam) {
     Channel
-        .fromPath('${params.outdir}/markDuplicates/*')
+        .fromFilePairs(deduped_bam_location)
         .println()
 }
