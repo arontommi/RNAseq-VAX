@@ -47,10 +47,11 @@ def helpMessage() {
 
 
 params.reads = false
-params.deduped_bam = false 
+params.deduped_bam = 'test' 
 params.singleEnd = false
 params.outdir = './results'
 params.deduped_bam_location = './results/markDuplicates/*.{bam,bam.bai}' 
+"data/*{1,2}.fastq.gz"
 params.genome = false
 params.project = false
 params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
