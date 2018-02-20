@@ -213,7 +213,7 @@ def check_log(logs) {
 /*
  * STEP 1 - FastQC
  */
-if (read_files_fastqc){
+if (params.reads){
         process fastqc {
         tag "$name"
         publishDir "${params.outdir}/fastqc", mode: 'copy',
