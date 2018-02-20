@@ -122,7 +122,7 @@ if( workflow.profile == 'uppmax' || workflow.profile == 'uppmax-modules' || work
     if ( !params.project ) exit 1, "No UPPMAX project ID found! Use --project"
 }
 
-if ( params.fasta) { 
+if ( params.reads) { 
     Channel
         .fromFilePairs( params.reads, size: params.singleEnd ? 1 : 2 )
         .ifEmpty { 
