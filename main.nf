@@ -131,7 +131,7 @@ if ( params.reads) {
 }
 else if (params.deduped_bam) {
     Channel
-        .fromFilePairs'${params.outdir}/markDuplicates/*.{bam,bam.bai}', flat: true)
+        .fromFilePairs('${params.outdir}/markDuplicates/*.{bam,bam.bai}', flat: true)
         .set( val(name) file(bam_md) file(bam_md_bai))
 
 }
