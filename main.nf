@@ -375,7 +375,7 @@ process markDuplicates {
         REMOVE_DUPLICATES=false \\
         ASSUME_SORTED=true \\
         PROGRAM_RECORD_ID='null' \\
-        VALIDATION_STRINGENCY=LENIENT
+        VALIDATION_STRINGENCY=LENIENTq
 
     # Print version number to standard out
     echo "File name: $rg_bam Picard version "\$(java -Xmx2g -jar \$PICARD_HOME/picard.jar  MarkDuplicates --version 2>&1)
@@ -441,6 +441,36 @@ process haplotypeCaller {
     """
 }
 
+java -jar GenomeAnalysisTK.jar -T VariantFiltration -R hg_19.fasta -V input.vcf -window 35 -cluster 3 -filterName FS -filter "FS > 30.0" -filterName QD -filter "QD < 2.0" -o output.vcf 
+
+/*
+ * STEP 7 Haplotypecaller
+ */
+process varfiltering {
+    tag "$vcf.baseName"
+    publishDir "${params.outdir}/VariantFiltration", mode: 'copy'
 
 
+    input:
+    file vcf
+    file fasta
+    file fai
+    file dict
 
+    output:
+    file "*.vcf" into filtered_vcf
+    script:
+
+    """
+    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar VariantFiltration \\
+    -R $fasta \\
+    -V $vcf \\
+    -window 35 \\
+    -cluster 3 \\
+    -filter-name FS \\
+    -filter "FS > 30.0" \\
+    -filter-name QD \\
+    -filter "QD < 2.0"  \\
+    -O ${vcf.baseName}.vcf 
+    """
+}
