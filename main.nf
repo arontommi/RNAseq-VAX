@@ -335,7 +335,7 @@ process addReadGroups{
     """
     java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar AddOrReplaceReadGroups \\
         I= $bam_markduplicates \\
-        O= ${bam_markduplicates}.RG.bam \\
+        O= ${bam_markduplicates.baseName}.RG.bam \\
         RGLB=$rglb \\
         RGPL=$rgpl \\
         RGPU=$rgpu \\
@@ -355,9 +355,9 @@ process markDuplicates {
     file rg_bam
 
     output:
-    file "${bam_markduplicates.baseName}.markDups.bam" into bam_md
-    file "${bam_markduplicates.baseName}.markDups_metrics.txt" into picard_results
-    file "${bam_markduplicates.baseName}.bam.bai" into bam_md_bai
+    file "${rg_bam.baseName}.markDups.bam" into bam_md
+    file "${rg_bam.baseName}.markDups_metrics.txt" into picard_results
+    file "${rg_bam.baseName}.bam.bai" into bam_md_bai
     file '.command.log' into markDuplicates_stdout
 
     script:
@@ -369,17 +369,17 @@ process markDuplicates {
     }
     """
     java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar MarkDuplicates \\
-        INPUT=$bam_markduplicates \\
-        OUTPUT=${bam_markduplicates.baseName}.markDups.bam \\
-        METRICS_FILE=${bam_markduplicates.baseName}.markDups_metrics.txt \\
+        INPUT=$rg_bam \\
+        OUTPUT=${rg_bam.baseName}.markDups.bam \\
+        METRICS_FILE=${rg_bam.baseName}.markDups_metrics.txt \\
         REMOVE_DUPLICATES=false \\
         ASSUME_SORTED=true \\
         PROGRAM_RECORD_ID='null' \\
         VALIDATION_STRINGENCY=LENIENT
 
     # Print version number to standard out
-    echo "File name: $bam_markduplicates Picard version "\$(java -Xmx2g -jar \$PICARD_HOME/picard.jar  MarkDuplicates --version 2>&1)
-    samtools index $bam_markduplicates
+    echo "File name: $rg_bam Picard version "\$(java -Xmx2g -jar \$PICARD_HOME/picard.jar  MarkDuplicates --version 2>&1)
+    samtools index $rg_bam
     """
 }
 
