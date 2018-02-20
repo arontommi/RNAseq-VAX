@@ -132,7 +132,7 @@ if ( params.reads) {
 else if (params.deduped_bam) {
     Channel
         .fromFilePairs('${params.outdir}/markDuplicates/*.{bam,bam.bai}', flat: true)
-        .into{bams}
+        .set{bams}
 }
 /*
  * PREPROCESSING - Download GTF
