@@ -322,7 +322,7 @@ process addReadGroups{
     val rgpl from params.rgpl
     val rgpu from params.rgpu
     output:
-    file "${bam_markduplicates.baseName}.RG.bam" into rg_bam
+    file "*.RG.bam" into rg_bam
 
 
     script:
@@ -335,7 +335,7 @@ process addReadGroups{
     """
     java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar AddOrReplaceReadGroups \\
         I= $bam_markduplicates \\
-        O= ${bam_markduplicates.baseName}.RG.bam \\
+        O= ${bam_markduplicates}.RG.bam \\
         RGLB=$rglb \\
         RGPL=$rgpl \\
         RGPU=$rgpu \\
