@@ -343,13 +343,11 @@ process addReadGroups{
     """
 }
 
-
-
 /*
  * STEP 6 Mark duplicates
  */
 process markDuplicates {
-    tag "${bam_markduplicates.baseName - '.sorted'}"
+    tag "${bam_markduplicates - '.sorted'}"
     publishDir "${params.outdir}/markDuplicates", mode: 'copy',
         saveAs: {filename -> filename.indexOf("_metrics.txt") > 0 ? "metrics/$filename" : "$filename"}
 
