@@ -132,8 +132,7 @@ if ( params.reads) {
 else if (params.deduped_bam) {
     Channel
         .fromFilePairs('${params.outdir}/markDuplicates/*.{bam,bam.bai}', flat: true)
-        .set( val(name), file(bam_md), file(bam_md_bai))
-
+        .into(bams)
 }
 /*
  * PREPROCESSING - Download GTF
@@ -363,7 +362,17 @@ if (params.reads){
         """
     }
 }
-if (bam_md && bam_md_bai){
+if ( bams || bam_md) {
+    if (bams)
+        process getbams {
+            input:
+            val(name) file(bam_md) file(bam_md_bai) from bams
+            output:
+            val name
+            file bam_md
+            file bam_md_bai
+    }
+
 
 /*
  * Readgroups added 
