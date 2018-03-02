@@ -73,6 +73,24 @@ RUN curl -fsSL https://github.com/samtools/samtools/releases/download/1.3.1/samt
     make install && \
     rm /opt/samtools-1.3.1.tar.bz2
 
+# Install bcftools
+RUN curl -fsSL https://github.com/samtools/bcftools/releases/download/1.7/bcftools-1.7.tar.bz2 -o /opt/bcftools-1.7.tar.bz2 && \
+    tar xvjf /opt/bcftools-1.7.tar.bz2 -C /opt/ && \
+    cd /opt/bcftools-1.7 && \
+    make && \
+    make install && \
+    rm /opt/bcftools-1.7.tar.bz2
+
+
+
+# Install htslib
+RUN curl -fsSL https://github.com/samtools/htslib/releases/download/1.7/htslib-1.7.tar.bz2 -o /opt/htslib-1.7.tar.bz2 && \
+    tar xvjf /opt/htslib-1.7.tar.bz2 -C /opt/ && \
+    cd /opt/htslib-1.7 && \
+    make && \
+    make install && \
+    rm /opt/htslib-1.7.tar.bz2
+
 
 # Create root directories for common Swedish HPC systems
 RUN mkdir /pica /lupus /crex1 /crex2 /proj /scratch /sw \

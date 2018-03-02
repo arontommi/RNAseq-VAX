@@ -445,7 +445,8 @@ if (bam_md) {
         file dict
 
         output:
-        file "*.vcf" into vcf
+        file "*.vcf.gz" into vcf
+        file "*.gz.tbi" into tabix
         script:
 
         """
@@ -455,6 +456,8 @@ if (bam_md) {
         --dont-use-soft-clipped-bases \\
         --standard-min-confidence-threshold-for-calling 20.0 \\
         -O ${splitNCigar_bam.baseName}.vcf
+        bgzip -c ${splitNCigar_bam.baseName}.vcf > ${splitNCigar_bam.baseName}.vcf.gz
+        tabix -p vcf ${splitNCigar_bam.baseName}.vcf.gz
         """
     }
 
@@ -472,6 +475,7 @@ if (bam_md) {
         file fasta
         file fai
         file dict
+        file tabix
 
         output:
         file "*.vcf" into filtered_vcf
