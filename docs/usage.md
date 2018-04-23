@@ -15,6 +15,8 @@ The typical command for running the pipeline is as follows:
 nextflow run RNAseq_AVC  -with-singularity rna_avc.img -profile uppmax --project 'your_uppmax_project' --fasta /sw/data/uppnex/reference/Homo_sapiens/hg19/program_files/GATK/concat.fasta
 ```
 
+
+
 This will launch the pipeline with the `singularity` configuration profile. See below for more information about profiles.
 
 Note that the pipeline will create the following files in your working directory:
