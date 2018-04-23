@@ -6,7 +6,7 @@ this pipeline takes fastq files oalready aligned data from NGI-RNAseq pipeline a
 
 
 ### Introduction
-RNA-seq_AVC: this pipeline takes fastq files oalready aligned data from NGI-RNAseq pipeline and calls allele specific variants
+RNA-seq_AVC: this pipeline takes fastq files or already aligned data from NGI-RNAseq pipeline and calls allele specific variants and allelevariant expressions
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker / singularity containers making installation trivial and results highly reproducible.
 
@@ -23,4 +23,4 @@ The RNA-seq_AVC pipeline comes with documentation about the pipeline, found in t
 5. [Troubleshooting](docs/troubleshooting.md)
 
 ### Credits
-This pipeline was written by Aron T. Skaftason ([arontommi](https://github.com/arontommi)) at [Your Institute](http://www.yourinstitute.com).
+This pipeline was written by Aron T. Skaftason ([arontommi](https://github.com/arontommi)) but mostly cannibalised from NGI-RNAseq

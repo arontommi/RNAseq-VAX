@@ -28,30 +28,6 @@ RUN curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /opt/get-pip.py && \
     python /opt/get-pip.py && \
     rm /opt/get-pip.py
 
-# Install Fastqc
-RUN curl -fsSL http://www.bioinformatics.babraham.ac.uk/projects/fastqc/fastqc_v0.11.5.zip -o /opt/fastqc_v0.11.5.zip && \
-    unzip /opt/fastqc_v0.11.5.zip -d /opt/ && \
-    chmod 755 /opt/FastQC/fastqc && \
-    ln -s /opt/FastQC/fastqc /usr/local/bin/fastqc && \
-    rm /opt/fastqc_v0.11.5.zip
-
-#install cutadapt for tirmgalore
-RUN pip install cutadapt
-
-# Install TrimGalore
-RUN mkdir /opt/TrimGalore && \
-    curl -fsSL http://www.bioinformatics.babraham.ac.uk/projects/trim_galore/trim_galore_v0.4.2.zip -o /opt/TrimGalore/trim_galore_v0.4.2.zip && \
-    unzip /opt/TrimGalore/trim_galore_v0.4.2.zip -d /opt/TrimGalore && \
-    ln -s /opt/TrimGalore/trim_galore /usr/local/bin/trim_galore && \
-    rm /opt/TrimGalore/trim_galore_v0.4.2.zip
-
-# Install STAR
-RUN git clone https://github.com/alexdobin/STAR.git /opt/STAR && \
-    ln -s /opt/STAR/bin/Linux_x86_64/STAR /usr/local/bin/STAR && \
-    ln -s /opt/STAR/bin/Linux_x86_64/STARlong /usr/local/bin/STARlong
-
-# Install MultiQC
-RUN pip install git+git://github.com/ewels/MultiQC.git
 
 # Install GATK
 RUN curl -fsSL https://github.com/broadinstitute/gatk/releases/download/4.0.1.2/gatk-4.0.1.2.zip -o /opt/gatk-4.0.1.2.zip && \
@@ -80,8 +56,6 @@ RUN curl -fsSL https://github.com/samtools/bcftools/releases/download/1.7/bcftoo
     make && \
     make install && \
     rm /opt/bcftools-1.7.tar.bz2
-
-
 
 # Install htslib
 RUN curl -fsSL https://github.com/samtools/htslib/releases/download/1.7/htslib-1.7.tar.bz2 -o /opt/htslib-1.7.tar.bz2 && \

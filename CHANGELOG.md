@@ -6,4 +6,7 @@ configs "stolen" and added from https://github.com/SciLifeLab/NGI-RNAseq
 
 dockerfile "stolen" as well from same source
 
-dupradar.r canibalized as well
+## 0.1.2 - 2018-03-20
+
+first functional version, can take fastq files and mimic NGI-RNAseq or straight from bamfiles from final/markduplicates directory 
+currently only works with star
