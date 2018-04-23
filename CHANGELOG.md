@@ -10,3 +10,8 @@ dockerfile "stolen" as well from same source
 
 first functional version, can take fastq files and mimic NGI-RNAseq or straight from bamfiles from final/markduplicates directory 
 currently only works with star
+
+
+## 0.1.3 - 2018-04-23
+
+aim changed, now takes bamfiles from markDuplicates and runs the pipepline on that

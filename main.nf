@@ -46,7 +46,7 @@ def helpMessage() {
 
 
 
-params.deduped_bam = false
+params.deduped_bam = 'T'
 params.outdir = './results'
 params.bamfolder = './results/markDuplicates/'
 params.genome = false
