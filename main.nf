@@ -23,23 +23,18 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run rna-seq_AVC --reads '*_R{1,2}.fastq.gz' -profile docker
-
+    nextflow run RNAseq_AVC  --containerPath = 'your containerPath' --project 'your_uppmax_project' --genome /sw/data/uppnex/reference/Homo_sapiens/hg19/program_files/GATK/concat.fasta
+    
     Mandatory arguments:
-      --reads                       Path to input data (must be surrounded with quotes)
       --genome                      Name of iGenomes reference
       --gtf                         Path to GTF file
       -profile                      Hardware config to use. docker / aws
-
-    Options:
-      --singleEnd                   Specifies that the input is single end reads
 
     References                      If not specified in the configuration file or you wish to overwrite any of the references.
       --fasta                       Path to Fasta reference
 
     Other options:
       --outdir                      The output directory where the results will be saved
-      --email                       Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits
       -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
     """.stripIndent()
 }
@@ -77,16 +72,16 @@ else if ( !params.deduped_bam ){
     exit 1, "No Bam specified! do some algning first!"
 }
 
-if ( params.fasta ){
-    if ( params.fasta.endsWith('.fa')) {
-        fasta = file(params.fasta)
-        fai = file(params.fasta + '.fai')
-        dict = file(params.fasta - '.fa'+'.dict')
+if ( params.genome ){
+    if ( params.genome.endsWith('.fa')) {
+        genomefasta = file(params.genome)
+        genomefai = file(params.genome + '.fai')
+        genomedict = file(params.genome - '.fa'+'.dict')
     }
-    else if ( params.fasta.endsWith('.fasta')) {
-        fasta = file(params.fasta)
-        fai = file(params.fasta + '.fai')
-        dict = file(params.fasta - '.fasta'+'.dict')
+    else if ( params.genome.endsWith('.fasta')) {
+        genomefasta = file(params.genome)
+        genomefai = file(params.genome + '.fai')
+        genomedict = file(params.genome - '.fasta'+'.dict')
     }
 }
 /*
@@ -133,9 +128,9 @@ process splitNCigarReads {
 
     input:
     set val(name), file(rg_bam), file(rg_bam_bai) from rg_data
-    file fasta
-    file fai
-    file dict
+    file genomefasta
+    file genomefai
+    file genomedict
 
     output:
     set val("$name"), file("${name}_split.bam"), file("${name}_split.bam.bai") into sc_data
@@ -144,7 +139,7 @@ process splitNCigarReads {
 
     """
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
-    -R $fasta \\
+    -R $genomefasta \\
     -I $rg_bam \\
     -O ${name}_split.bam 
 
@@ -165,9 +160,9 @@ process haplotypeCaller {
 
     input:
     set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai) from sc_data
-    file fasta
-    file fai
-    file dict
+    file genomefasta
+    file genomefai
+    file genomedict
 
     output:
     set val("$name"), file("$splitNCigar_bam"), file("$splitNCigar_bam_bai"), file("${name}.vcf.gz"), file("${name}.vcf.gz.tbi") into ht_data
@@ -176,7 +171,7 @@ process haplotypeCaller {
 
     """
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar HaplotypeCaller \\
-    -R $fasta \\
+    -R $genomefasta \\
     -I $splitNCigar_bam \\
     --dont-use-soft-clipped-bases \\
     --standard-min-confidence-threshold-for-calling 20.0 \\
@@ -201,9 +196,9 @@ process varfiltering {
 
     input:
     set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file(vcf), file(vcf_tbi) from ht_data
-    file fasta
-    file fai
-    file dict
+    file genomefasta
+    file genomefai
+    file genomedict
 
 
     output:
@@ -213,7 +208,7 @@ process varfiltering {
 
     """
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar VariantFiltration \\
-    -R $fasta \\
+    -R $genomefasta \\
     -V $vcf \\
     -window 35 \\
     -cluster 3 \\
@@ -237,9 +232,9 @@ process varfiltering {
 
     input:
     set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file(filtered_vcf), file(vcf_tbi) from filtered_data
-    file fasta
-    file fai
-    file dict
+    file genomefasta
+    file genomefai
+    file genomedict
 
 
     output:
@@ -249,7 +244,7 @@ process varfiltering {
 
     """
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SelectVariants \\
-    -R $fasta \\
+    -R $genomefasta \\
     -V $filtered_vcf \\
     --restrict-alleles-to BIALLELIC \\
     -select-type SNP \\
@@ -266,9 +261,9 @@ process varfiltering {
 
     input:
     set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file(biallelec_vcf), file(vcf_index) from BiallelecVCF
-    file fasta
-    file fai
-    file dict
+    file genomefasta
+    file genomefai
+    file genomedict
 
 
     output:
@@ -277,7 +272,7 @@ process varfiltering {
 
     """
     java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar ASEReadCounter \\
-    -R $fasta \\
+    -R $genomefasta \\
     -I $splitNCigar_bam \\
     -V $biallelec_vcf \\
     -O ${name}.ASE.csv
