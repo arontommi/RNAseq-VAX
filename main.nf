@@ -46,8 +46,6 @@ params.outdir = './results'
 params.bamfolder = './results/markDuplicates/'
 params.genome = false
 params.project = false
-params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
-params.gtf = params.genome ? params.genomes[ params.genome ].gtf ?: false : false
 params.download_fasta = false
 
 
@@ -69,7 +67,7 @@ if (params.deduped_bam ) {
         .set{bam_md}
 }
 else if ( !params.deduped_bam ){
-    exit 1, "No Bam specified! do some algning first!"
+    exit 1, "No Bam specified! do some aligning first!"
 }
 
 if ( params.genome ){
