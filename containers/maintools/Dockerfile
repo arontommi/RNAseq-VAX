@@ -86,4 +86,3 @@ ENV GENOME="GRCh37.75"
 
 # Download Genome
 RUN java -jar $SNPEFF_HOME/snpEff.jar download $GENOME
-

@@ -46,7 +46,7 @@ params.outdir = './results'
 params.bamfolder = './results/markDuplicates/'
 params.genome = false
 params.project = false
-params.download_fasta = false
+params.dbsnp = '/sw/data/uppnex/ToolBox/ReferenceAssemblies/hg38make/bundle/2.8/b37/dbsnp_138.b37.vcf'
 
 
 params.rglb = '1'
@@ -161,6 +161,7 @@ process haplotypeCaller {
     file genomefasta
     file genomefai
     file genomedict
+    file dbsnp from params.dbsnp
 
     output:
     set val("$name"), file("$splitNCigar_bam"), file("$splitNCigar_bam_bai"), file("${name}.vcf.gz"), file("${name}.vcf.gz.tbi") into ht_data
@@ -174,6 +175,7 @@ process haplotypeCaller {
     --dont-use-soft-clipped-bases \\
     --standard-min-confidence-threshold-for-calling 20.0 \\
     -O ${name}.vcf
+    --dbsnp $dbsnp
     bgzip -c ${name}.vcf > ${name}.vcf.gz
     tabix -p vcf ${name}.vcf.gz
     """

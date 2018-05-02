@@ -16,6 +16,10 @@ currently only works with star
 
 aim changed, now takes bamfiles from markDuplicates and runs the pipepline on that
 
+## 0.1.4 - 2018-05-02
+
+some code cleaning done
+
 
 TODO:
 	- add annotation
