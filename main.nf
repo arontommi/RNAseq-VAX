@@ -47,7 +47,7 @@ params.bamfolder = './results/markDuplicates/'
 params.genome = false
 params.project = false
 params.dbsnp = '/sw/data/uppnex/ToolBox/ReferenceAssemblies/hg38make/bundle/2.8/b37/dbsnp_138.b37.vcf'
-
+params.genebed = '/sw/data/uppnex/igenomes/Homo_sapiens/Ensembl/GRCh37/Annotation/Genes/genes.bed'
 
 params.rglb = '1'
 params.rgpl = 'illumina'
@@ -152,7 +152,7 @@ process haplotypeCaller {
     tag "$splitNCigar_bam.baseName"
     publishDir "${params.outdir}/haplotypeCaller", mode: 'copy',
         saveAs: {filename ->
-                    if (filename.endsWith(".bam") || filename.endsWith(".bam.bai")) null
+                    if (filename.endsWith(".bam") || filename.endsWith(".bai")) null
                     else $filename
                     }
 
@@ -189,7 +189,7 @@ process varfiltering {
     tag "$vcf.baseName"
     publishDir "${params.outdir}/VariantFiltration", mode: 'copy',
         saveAs: {filename ->
-                    if (filename.indexOf(".bam")> 0) null
+                    if (filename.endsWith(".bam")> 0) null
                     else filename
                     }
 
