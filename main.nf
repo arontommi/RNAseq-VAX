@@ -23,19 +23,14 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run RNAseq_AVC  --containerPath = 'your containerPath' --project 'your_uppmax_project' --genome /sw/data/uppnex/reference/Homo_sapiens/hg19/program_files/GATK/concat.fasta
+    nextflow run RNAseq_AVC  -with-singularity rna-avc.img --project 'your_uppmax_project' --genome /sw/data/uppnex/reference/Homo_sapiens/hg19/program_files/GATK/concat.fasta
     
     Mandatory arguments:
-      --genome                      Name of iGenomes reference
-      --gtf                         Path to GTF file
-      -profile                      Hardware config to use. docker / aws
+      --genome                      Genome used to align 
+      --project                     your Uppmax project
+      -with-singularity             Singularity container
 
-    References                      If not specified in the configuration file or you wish to overwrite any of the references.
-      --fasta                       Path to Fasta reference
 
-    Other options:
-      --outdir                      The output directory where the results will be saved
-      -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonic.
     """.stripIndent()
 }
 
@@ -46,13 +41,16 @@ params.outdir = './results'
 params.bamfolder = './results/markDuplicates/'
 params.genome = false
 params.project = false
-params.dbsnp = '/sw/data/uppnex/ToolBox/ReferenceAssemblies/hg38make/bundle/2.8/b37/dbsnp_138.b37.vcf'
-params.genebed = '/sw/data/uppnex/igenomes/Homo_sapiens/Ensembl/GRCh37/Annotation/Genes/genes.bed'
+params.dbsnp = '/sw/data/uppnex/GATK/2.8/b37/dbsnp_138.hg19.vcf'
+params.genesbed = '/home/arosk159/annotations/no_chr.ref-transcripts.bed'
 
 params.rglb = '1'
 params.rgpl = 'illumina'
 params.rgpu = 'unit1'
-
+dbsnp = file(params.dbsnp)
+dbsnpi = file(params.dbsnp + '.idx')
+genesbed = file(params.genesbed)
+params.genesbedi = '/home/arosk159/annotations/sorted.no_chr.ref-transcripts.bed.gz.tbi'
 
 wherearemyfiles = file("$baseDir/assets/where_are_my_files.txt")
 
@@ -61,7 +59,7 @@ if( workflow.profile == 'uppmax' || workflow.profile == 'uppmax-modules' || work
     if ( !params.project ) exit 1, "No UPPMAX project ID found! Use --project"
 }
 
-if (params.deduped_bam ) {
+if (params.bamfolder ) {
     Channel
         .fromPath(params.bamfolder+'*.bam')
         .set{bam_md}
@@ -115,7 +113,6 @@ process addReadGroups{
         RGSM=${bam_md.baseName}
 
     samtools index ${bam_md.baseName}.RG.bam
-
     """
 }
 /*
@@ -153,7 +150,7 @@ process haplotypeCaller {
     publishDir "${params.outdir}/haplotypeCaller", mode: 'copy',
         saveAs: {filename ->
                     if (filename.endsWith(".bam") || filename.endsWith(".bai")) null
-                    else $filename
+                    else filename
                     }
 
     input:
@@ -161,11 +158,12 @@ process haplotypeCaller {
     file genomefasta
     file genomefai
     file genomedict
-    file dbsnp from params.dbsnp
+    file dbsnp 
+    file dbsnpi
 
     output:
-    set val("$name"), file("$splitNCigar_bam"), file("$splitNCigar_bam_bai"), file("${name}.vcf.gz"), file("${name}.vcf.gz.tbi") into ht_data
-    
+    set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file("${name}.vcf.gz"), file("${name}.vcf.gz.tbi") into a_data
+
     script:
 
     """
@@ -174,14 +172,42 @@ process haplotypeCaller {
     -I $splitNCigar_bam \\
     --dont-use-soft-clipped-bases \\
     --standard-min-confidence-threshold-for-calling 20.0 \\
-    -O ${name}.vcf
+    -O ${name}.vcf \\
     --dbsnp $dbsnp
     bgzip -c ${name}.vcf > ${name}.vcf.gz
     tabix -p vcf ${name}.vcf.gz
     """
 }
 
+process annotate_hpc {
+    tag "$splitNCigar_bam.baseName"
+    publishDir "${params.outdir}/annotated", mode: 'copy',
+        saveAs: {filename ->
+                    if (filename.endsWith(".bam") || filename.endsWith(".bai")) null
+                    else filename
+                    }
 
+    input:
+    set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file(vcf), file(vcf_tbi) from a_data
+    file genesbed
+    file genesbedi
+
+    output:
+    set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file("${name}.annotated.vcf.gz"), file("${name}.annotated.vcf.gz.tbi"), file('${name}.annotated.vcf') into ht_data
+
+    script:
+
+    """
+    bcftools annotate \
+    -a $genesbed \
+    -c CHROM,FROM,TO,GENE \
+    -h <(echo '##INFO=<ID=GENE,Number=1,Type=String,Description="Gene name">') \
+    $vcf  \
+    -o ${name}.annotated.vcf
+    bgzip -c ${name}.annotated.vcf > ${name}.annotated.vcf.gz
+    tabix -p vcf ${name}.annotated.vcf.gz 
+    """
+}
 /*
  * STEP 8 varfiltering
  */
@@ -189,7 +215,7 @@ process varfiltering {
     tag "$vcf.baseName"
     publishDir "${params.outdir}/VariantFiltration", mode: 'copy',
         saveAs: {filename ->
-                    if (filename.endsWith(".bam")> 0) null
+                    if (filename.endsWith(".bam") || filename.endsWith(".bai")) null
                     else filename
                     }
 
@@ -202,7 +228,7 @@ process varfiltering {
 
 
     output:
-    set val("$name"), file("$splitNCigar_bam"), file("$splitNCigar_bam_bai"), file("${name}.sorted.vcf.gz"), file("${name}.sorted.vcf.gz.tbi") into filtered_data
+    set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file("${name}.sorted.vcf.gz"), file("${name}.sorted.vcf.gz.tbi") into filtered_data
     
     script:
 
@@ -221,11 +247,14 @@ process varfiltering {
     tabix -p vcf ${name}.sorted.vcf.gz
     """
 }
+
+
+
  process selectvariants {
     tag "$filtered_vcf.baseName"
     publishDir "${params.outdir}/BiallelecVCF", mode: 'copy',
         saveAs: {filename ->
-                    if (filename.indexOf(".bam") > 0) null
+                    if (filename.endsWith(".bam") || filename.endsWith(".bai")) null
                     else filename
                     }
 
@@ -238,7 +267,7 @@ process varfiltering {
 
 
     output:
-    set val("$name"), file("$splitNCigar_bam"), file("$splitNCigar_bam_bai"), file("${name}.biallelec.vcf.gz"), file("${name}.biallelec.vcf.gz.tbi") into BiallelecVCF
+    set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file("${name}.biallelec.vcf.gz"), file("${name}.biallelec.vcf.gz.tbi") into BiallelecVCF
 
     script:
 
@@ -258,7 +287,6 @@ process varfiltering {
     tag "$biallelec_vcf.baseName"
     publishDir "${params.outdir}/AlleleSpecificExpression", mode: 'copy'
 
-
     input:
     set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file(biallelec_vcf), file(vcf_index) from BiallelecVCF
     file genomefasta
@@ -267,7 +295,7 @@ process varfiltering {
 
 
     output:
-    file "${name}.ASE.csv" into AlleleSpecificExpression
+    file "${name}.ASE.csv" into alleleSpecificExpression
     script:
 
     """
