@@ -41,16 +41,10 @@ params.outdir = './results'
 params.bamfolder = './results/markDuplicates/'
 params.genome = false
 params.project = false
-params.dbsnp = '/sw/data/uppnex/GATK/2.8/b37/dbsnp_138.hg19.vcf'
-params.genesbed = '/home/arosk159/annotations/no_chr.ref-transcripts.bed'
 
 params.rglb = '1'
 params.rgpl = 'illumina'
 params.rgpu = 'unit1'
-dbsnp = file(params.dbsnp)
-dbsnpi = file(params.dbsnp + '.idx')
-genesbed = file(params.genesbed)
-params.genesbedi = '/home/arosk159/annotations/sorted.no_chr.ref-transcripts.bed.gz.tbi'
 
 wherearemyfiles = file("$baseDir/assets/where_are_my_files.txt")
 
@@ -158,11 +152,9 @@ process haplotypeCaller {
     file genomefasta
     file genomefai
     file genomedict
-    file dbsnp 
-    file dbsnpi
 
     output:
-    set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file("${name}.vcf.gz"), file("${name}.vcf.gz.tbi") into a_data
+    set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file("${name}.vcf.gz"), file("${name}.vcf.gz.tbi") into ht_data
 
     script:
 
@@ -172,42 +164,12 @@ process haplotypeCaller {
     -I $splitNCigar_bam \\
     --dont-use-soft-clipped-bases \\
     --standard-min-confidence-threshold-for-calling 20.0 \\
-    -O ${name}.vcf \\
-    --dbsnp $dbsnp
+    -O ${name}.vcf 
     bgzip -c ${name}.vcf > ${name}.vcf.gz
     tabix -p vcf ${name}.vcf.gz
     """
 }
 
-process annotate_hpc {
-    tag "$splitNCigar_bam.baseName"
-    publishDir "${params.outdir}/annotated", mode: 'copy',
-        saveAs: {filename ->
-                    if (filename.endsWith(".bam") || filename.endsWith(".bai")) null
-                    else filename
-                    }
-
-    input:
-    set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file(vcf), file(vcf_tbi) from a_data
-    file genesbed
-    file genesbedi
-
-    output:
-    set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file("${name}.annotated.vcf.gz"), file("${name}.annotated.vcf.gz.tbi"), file('${name}.annotated.vcf') into ht_data
-
-    script:
-
-    """
-    bcftools annotate \
-    -a $genesbed \
-    -c CHROM,FROM,TO,GENE \
-    -h <(echo '##INFO=<ID=GENE,Number=1,Type=String,Description="Gene name">') \
-    $vcf  \
-    -o ${name}.annotated.vcf
-    bgzip -c ${name}.annotated.vcf > ${name}.annotated.vcf.gz
-    tabix -p vcf ${name}.annotated.vcf.gz 
-    """
-}
 /*
  * STEP 8 varfiltering
  */
