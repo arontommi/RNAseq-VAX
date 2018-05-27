@@ -34,9 +34,6 @@ def helpMessage() {
     """.stripIndent()
 }
 
-
-
-params.deduped_bam = 'T'
 params.outdir = './results'
 params.bamfolder = './results/markDuplicates/'
 params.genome = false
@@ -58,7 +55,7 @@ if (params.bamfolder ) {
         .fromPath(params.bamfolder+'*.bam')
         .set{bam_md}
 }
-else if ( !params.deduped_bam ){
+else if ( !params.params.bamfolder ){
     exit 1, "No Bam specified! do some aligning first!"
 }
 
