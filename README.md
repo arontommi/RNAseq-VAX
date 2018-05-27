@@ -1,10 +1,10 @@
+
+please note : This pipeline is still in alpha stage. please use at your own cause
+
+
 # RNA-seq_AVC
 this pipeline takes already aligned data from NGI-RNAseq pipeline and calls variants with
-haplotypecaller as wella as allele specific variants
-
-[![Build Status](https://travis-ci.org/rna-seq_AVC.svg?branch=master)](https://travis-ci.org/rna-seq_AVC)
-[![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A50.24.0-brightgreen.svg)](https://www.nextflow.io/)
-
+haplotypecaller as well as allele specific variants. The aim is to follow the guidelines for variant calling by GATK. 
 
 ### Introduction
 RNA-seq_AVC: this pipeline takes already aligned data from NGI-RNAseq pipeline and calls variants and allele specifice variant expressions

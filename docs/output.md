@@ -1,5 +1,6 @@
 # RNA-seq_AVC
-The aim of this pipeline is to processed bam files from NGI-RNAseq and oputput variants and allele specific expression
+The aim of this pipeline is to processed bam files from NGI-RNAseq and output variants and allele specific expression
+
 ## Pipeline overview
 The pipeline is built using [Nextflow](https://www.nextflow.io/)
 and processes data using the following steps:

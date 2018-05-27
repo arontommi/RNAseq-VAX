@@ -20,28 +20,6 @@ aim changed, now takes bamfiles from markDuplicates and runs the pipepline on th
 
 some code cleaning done
 
-
 TODO:
-	- add annotation []
-		- dbsnp within haplotypecaller [x]
-		- cosmic []
-		- add gene annotation for vcf files []
-	- fix if statements for different parameters so that error messages are presented when files are not found or given []
-		- for if params.bamfolder []
- 		- for if params.genome []
- 	- fix channel input from an if statement []
- 	- clean up steps for each process []
- 	- fix containers so that each process has its own container []
- 	- fix dbsnp and gene stuff []
- 	- make sure annotate_hpc process works
- 	- add tests []
- 	
- 	- finish todo list :P []
-
-
-
-
-
-
-
-
+	filter variants
+	annotate variants 

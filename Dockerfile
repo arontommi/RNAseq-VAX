@@ -1,7 +1,7 @@
 FROM openjdk:8
 
-LABEL authors="{{ cookiecutter.author_email }}" \
-    description="Docker image containing all requirements for {{ cookiecutter.pipeline_name }} pipeline"
+LABEL authors= aron.skaftason@ki.se \
+    description="Docker image containing all requirements for rna-avc pipeline"
 
 # Install container-wide requrements gcc, pip, zlib, libssl, make, libncurses, fortran77, g++, R
 RUN apt-get update && \

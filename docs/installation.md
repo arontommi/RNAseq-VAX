@@ -7,3 +7,4 @@ first pull the singularity image like this :
 singularity pull --name rnaseq_avc.img docker://arontommi/rna_avc:latest
 ```
 
+Pull the project and you are good to go. 
