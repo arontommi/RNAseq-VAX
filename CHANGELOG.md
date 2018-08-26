@@ -23,3 +23,12 @@ some code cleaning done
 TODO:
 	filter variants
 	annotate variants 
+
+## 0.1.5 - 2018-08-26
+
+Renamed to RNAseq-VAX
+
+annotation has been added. VEP has been added to main.nf and annotate.nf has also been created to create nice tab files. annotate.nf still needs to be cleaned up and fixed.
+
+
+

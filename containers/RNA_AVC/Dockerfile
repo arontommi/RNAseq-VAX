@@ -1,7 +1,7 @@
 FROM openjdk:8
 
-LABEL authors= aron.skaftason@ki.se \
-    description="Docker image containing all requirements for rna-avc pipeline"
+LABEL authors=aron.skaftason@ki.se \
+    description="Docker image containing all requirements for rnaseq-vax pipeline"
 
 # Install container-wide requrements gcc, pip, zlib, libssl, make, libncurses, fortran77, g++, R
 RUN apt-get update && \
@@ -21,6 +21,7 @@ RUN apt-get update && \
         make \
         python-dev \
         zlib1g-dev \
+        cpanminus \
     && rm -rf /var/lib/apt/lists/*
 
 # Install pip
@@ -65,10 +66,27 @@ RUN curl -fsSL https://github.com/samtools/htslib/releases/download/1.7/htslib-1
     make install && \
     rm /opt/htslib-1.7.tar.bz2
 
+#install vep
 
-# Create root directories for common Swedish HPC systems
-RUN mkdir /pica /lupus /crex1 /crex2 /proj /scratch /sw \
-          /c3se /local /apps
+RUN cpanm DBI 
+
+RUN git clone https://github.com/Ensembl/ensembl-vep.git /opt/ensembl-vep &&\
+    cd /opt/ensembl-vep &&\
+    perl INSTALL.pl
+
+ENV \
+  GENOME=GRCh37 \
+  VEP_VERSION=91
+
+# Download Genome
+RUN \
+  mkdir -p    \
+  && cd /opt/.vep \
+  && wget --quiet -O homo_sapiens_vep_${VEP_VERSION}_${GENOME}.tar.gz \
+    ftp://ftp.ensembl.org/pub/release-${VEP_VERSION}/variation/VEP/homo_sapiens_vep_${VEP_VERSION}_${GENOME}.tar.gz \
+  && tar xzf homo_sapiens_vep_${VEP_VERSION}_${GENOME}.tar.gz \
+  && rm homo_sapiens_vep_${VEP_VERSION}_${GENOME}.tar.gz
+
 
 
 

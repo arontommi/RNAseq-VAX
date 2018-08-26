@@ -15,10 +15,8 @@ NXF_OPTS='-Xms1g -Xmx6g'
 ## Running the pipeline
 The typical command for running the pipeline is as follows:
 ```bash
-    nextflow run RNAseq_AVC  -with-singularity rna_avc.img --project 'your_uppmax_project' --genome /sw/data/uppnex/reference/Homo_sapiens/hg19/program_files/GATK/concat.fasta
+    nextflow run RNAseq_VAX  -with-singularity rnaseq_vax.img --project 'your_uppmax_project' --genome /sw/data/uppnex/reference/Homo_sapiens/hg19/program_files/GATK/concat.fasta
 ```
-
-
 
 This will launch the pipeline with the `singularity` configuration profile. See below for more information about profiles.
 

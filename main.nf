@@ -5,9 +5,9 @@ vim: syntax=groovy
 ========================================================================================
                          RNA-seq_AVC
 ========================================================================================
- RNA-seq_AVC Analysis Pipeline. Started 2018-02-06.
+ RNAseq-VAX nalysis Pipeline. Started 2018-02-06.
  #### Homepage / Documentation
- rna-seq_AVC
+ RNAseq-VAX
  #### Authors
  Aron T. Skaftason arontommi <aron.skaftason@ki.se> - https://github.com/arontommi>
 ----------------------------------------------------------------------------------------
@@ -23,21 +23,22 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run RNAseq_AVC  -with-singularity rna-avc.img --project 'your_uppmax_project' --genome /sw/data/uppnex/reference/Homo_sapiens/hg19/program_files/GATK/concat.fasta
+    nextflow run RNAseq_AVC  -with-singularity rna-avc.img --project 'your_uppmax_project' --fasta /sw/data/uppnex/reference/Homo_sapiens/hg19/program_files/GATK/concat.fasta --genome GRCh37
     
     Mandatory arguments:
-      --genome                      Genome used to align 
-      --project                     your Uppmax project
-      -with-singularity             Singularity container
-
+      --genome                     Genome( only works with GRCh37 right now.)
+      --fasta                      fasta used to align 
+      --project                    your Uppmax project
+      -with-singularity            Singularity container
 
     """.stripIndent()
 }
 
 params.outdir = './results'
 params.bamfolder = './results/markDuplicates/'
-params.genome = false
+params.fasta = false
 params.project = false
+parms.genome =  'GRCh37'
 
 params.rglb = '1'
 params.rgpl = 'illumina'
@@ -59,16 +60,16 @@ else if ( !params.params.bamfolder ){
     exit 1, "No Bam specified! do some aligning first!"
 }
 
-if ( params.genome ){
-    if ( params.genome.endsWith('.fa')) {
-        genomefasta = file(params.genome)
-        genomefai = file(params.genome + '.fai')
-        genomedict = file(params.genome - '.fa'+'.dict')
+if ( params.fasta ){
+    if ( params.fasta.endsWith('.fa')) {
+        genomefasta = file(params.fasta)
+        genomefai = file(params.fasta + '.fai')
+        genomedict = file(params.fasta - '.fa'+'.dict')
     }
-    else if ( params.genome.endsWith('.fasta')) {
-        genomefasta = file(params.genome)
-        genomefai = file(params.genome + '.fai')
-        genomedict = file(params.genome - '.fasta'+'.dict')
+    else if ( params.fasta.endsWith('.fasta')) {
+        genomefasta = file(params.fasta)
+        genomefai = file(params.fasta + '.fai')
+        genomedict = file(params.fasta - '.fasta'+'.dict')
     }
 }
 /*
@@ -226,6 +227,7 @@ process varfiltering {
 
 
     output:
+    set val(name), file("${name}.biallelec.vcf.gz"), file("${name}.biallelec.vcf.gz.tbi") into vep_annotating
     set val(name), file(splitNCigar_bam), file(splitNCigar_bam_bai), file("${name}.biallelec.vcf.gz"), file("${name}.biallelec.vcf.gz.tbi") into BiallelecVCF
 
     script:
@@ -239,6 +241,38 @@ process varfiltering {
     -O ${name}.biallelec.vcf
     bgzip -c ${name}.biallelec.vcf > ${name}.biallelec.vcf.gz 
     tabix -p vcf ${name}.biallelec.vcf.gz 
+    """
+}
+
+ process runvep {
+    tag "$vcffile.baseName"
+    publishDir "${params.outdir}/VEP", mode: 'copy'
+
+    input:
+    set val(name), file(vcffile), file(vcffile_tbi) from vep_annotating
+    val params.genome
+
+    output:
+    set val(name), file("${name}.summary.html"), file("${name}.VEP.ann.vcf") into vep_out
+
+    script:
+
+    """
+    /opt/ensembl-vep/vep --dir /opt/.vep \
+        -i ${vcffile} \
+        -o ${name}.VEP.ann.vcf \
+        --assembly ${params.genome} \
+        --cache \
+        --cache_version 91 \
+        --database \
+        --everything \
+        --filter_common \
+        --format vcf \
+        --offline \
+        --per_gene \
+        --stats_file ${name}.VEP.summary.html \
+        --total_length \
+        --vcf
     """
 }
 
