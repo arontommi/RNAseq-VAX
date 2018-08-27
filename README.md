@@ -3,8 +3,7 @@ please note : This pipeline is still in alpha stage. please use at your own risk
 
 
 # RNAseq-VAX - RNAseq Variante Allele Expression 
-this pipeline takes already aligned data from NGI-RNAseq pipeline and calls variants with
-haplotypecaller as well as allele specific variants. The aim is to follow the guidelines for variant calling by GATK. 
+this pipeline takes already aligned data from nf-core/rnaseq pipeline and calls variants with haplotypecaller as well as allele specific variants. The aim is to follow the guidelines for variant calling by GATK. It then annoatates the variants with VEP
 
 ### Introduction
 RNAseq-VAX: this pipeline takes already aligned data from NGI-RNAseq pipeline and calls variants and allele specifice variant expressions
@@ -21,4 +20,4 @@ The RNAseq_VAX pipeline comes with documentation about the pipeline, found in th
 
 
 ### Credits
-This pipeline was written by Aron T. Skaftason ([arontommi](https://github.com/arontommi)) but mostly cannibalised from [NGI-RNAseq](https://github.com/SciLifeLab/NGI-RNAseq/)
+This pipeline was written by Aron T. Skaftason ([arontommi](https://github.com/arontommi)) but mostly cannibalised from [nf-core/rnaseq](https://github.com/nf-core/rnaseq)
