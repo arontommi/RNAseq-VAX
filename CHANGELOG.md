@@ -30,5 +30,18 @@ Renamed to RNAseq-VAX
 
 annotation has been added. VEP has been added to main.nf and annotate.nf has also been created to create nice tab files. annotate.nf still needs to be cleaned up and fixed.
 
+## 0.1.6 - 2018-09-05
+
+strelka2pandas.py has been removed from bin and replaced by a similar app that works(vcf2tab project, will create a seperate github on that when it is worthy enough)
+
+finally added a .gitignore file 
+
+TODO: 
+    fix annotation.nf
+    create a seperated docker for annotation
+    move vep to annotation ?
+    set up so that i can run multiple dockers
+
+
 
 

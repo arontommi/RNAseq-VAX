@@ -65,7 +65,7 @@ process siftAddCosmic {
     script:
     """
 
-    zgrep -E '#|PASS' ${vcf} > ${vcf.baseName}.pass.vcf
+    grep -E '#|PASS' ${vcf} > ${vcf.baseName}.pass.vcf
 
     java -Xmx4g \
 	  -jar \$SNPEFF_HOME/SnpSift.jar \
@@ -86,26 +86,12 @@ process finishVCF {
         file(vcf) from siftAddCosmic
 
     output:
-        file("${vcf.baseName}.anno.done.txt") into finishedFile
-        file("${vcf.baseName}.ADfiltered.vcf") into finishedVCFFile
+        file("${vcf.baseName}.tab.csv") into finishedFile
 
     script:
     """
-    seqtool vcf strelka -f ${vcf} -o ${vcf.baseName}.strelkaadjusted.vcf
 
-    java -Xmx4g \
-	  -jar \$SNPEFF_HOME/SnpSift.jar \
-	  filter "( TUMVAF >= 0.1 ) & ( TUMALT > 4 )" \
-	  -f ${vcf.baseName}.strelkaadjusted.vcf \
-	  > ${vcf.baseName}.ADfiltered.vcf
-
-    seqtool vcf melt -f ${vcf.baseName}.ADfiltered.vcf -o ${vcf.baseName}.melt.txt -s ${vcf.baseName} --includeHeader
-
-    pyenv global 3.6.3
-    eval "\$(pyenv init -)"
-    strelka2pandas.py -i ${vcf.baseName}.melt.txt -o ${vcf.baseName}.anno.txt
-
-    grep -E -v 'LCRfiltered|IGRegion' ${vcf.baseName}.anno.txt > ${vcf.baseName}.anno.done.txt
+    python HaplotypeCaller2tab.py -i ${vcf} -o ${vcf.baseName}.tab.csv -s ${vcf.baseName}
 
     """ 
 
