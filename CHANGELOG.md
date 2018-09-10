@@ -43,5 +43,20 @@ TODO:
     set up so that i can run multiple dockers
 
 
+## 0.1.7 - 2018-09-10
+
+fixes made to vcf2tab
+fixes made to annotation docker, made similar to og docker
+fixes made to annotate.nf
+
+filter added to Haplotypecaller2tab 
+    needs at least depth of 10 alleles and 20 ref.
+
+
+TODO:
+    add resources to all processes of annoatate.nf into base.config
+    see todo from 09-05
+    fix igenomes to work
+    
 
 

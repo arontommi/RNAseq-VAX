@@ -68,7 +68,7 @@ process siftAddCosmic {
     grep -E '#|PASS' ${vcf} > ${vcf.baseName}.pass.vcf
 
     java -Xmx4g \
-	  -jar \$SNPEFF_HOME/SnpSift.jar \
+	  -jar /opt/snpEff/SnpSift.jar \
 	  annotate \
 	  -info CNT \
     ${cosmic} \
@@ -91,7 +91,7 @@ process finishVCF {
     script:
     """
 
-    python HaplotypeCaller2tab.py -i ${vcf} -o ${vcf.baseName}.tab.csv -s ${vcf.baseName}
+    python3 vcf2tab/HaplotypeCaller2tab.py -i ${vcf} -o ${vcf.baseName}.tab.csv -s ${vcf.baseName}
 
     """ 
 
