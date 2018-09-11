@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 import click
 from vcffunctions.vcfheader import *
 from vcffunctions.vcf2tab import *

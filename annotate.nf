@@ -87,7 +87,7 @@ process finishVCF {
     script:
     """
 
-    python3 HaplotypeCaller2tab.py -i ${vcf} -o ${vcf.baseName}.tab.csv -s ${vcf.baseName}
+    HaplotypeCaller2tab.py -i ${vcf} -o ${vcf.baseName}.tab.csv -s ${vcf.baseName}
 
     """ 
 
