@@ -1,5 +1,6 @@
 #!/usr/bin/env nextflow
 /*
+
 ========================================================================================
                          RNA-seq_AVC
 ========================================================================================
@@ -15,13 +16,13 @@
 def helpMessage() {
     log.info"""
     =========================================
-     RNA-seq_AVC v${version}
+     RNAseq_VAX v${version}
     =========================================
     Usage:
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run RNAseq_AVC  -with-singularity rna-avc.img --project 'your_uppmax_project' --fasta /sw/data/uppnex/reference/Homo_sapiens/hg19/program_files/GATK/concat.fasta --genome GRCh37
+    nextflow run RNAseq_VAX  -with-singularity rna-avc.img --project 'your_uppmax_project' --fasta /sw/data/uppnex/reference/Homo_sapiens/hg19/program_files/GATK/concat.fasta --genome GRCh37
     
     Mandatory arguments:
       --genome                     Genome( only works with GRCh37 right now.)
@@ -50,9 +51,7 @@ if( workflow.profile == 'uppmax' || workflow.profile == 'uppmax-modules' || work
 }
 
 if (params.bamfolder ) {
-    Channel
-        .fromPath(params.bamfolder+'*.bam')
-        .set{bam_md}
+    bam_md = Channel.fromPath(params.bamfolder+'*.bam')
 }
 else if ( !params.params.bamfolder ){
     exit 1, "No Bam specified! do some aligning first!"
@@ -208,7 +207,7 @@ process varfiltering {
 
 
 
- process selectvariants {
+process selectvariants {
     tag "$filtered_vcf.baseName"
     publishDir "${params.outdir}/BiallelecVCF", mode: 'copy',
         saveAs: {filename ->
@@ -242,7 +241,7 @@ process varfiltering {
     """
 }
 
- process runvep {
+process runvep {
     tag "$vcffile.baseName"
     publishDir "${params.outdir}/VEP", mode: 'copy'
 
@@ -274,7 +273,7 @@ process varfiltering {
     """
 }
 
- process allelespecificexpression {
+process allelespecificexpression {
     tag "$biallelec_vcf.baseName"
     publishDir "${params.outdir}/AlleleSpecificExpression", mode: 'copy'
 
