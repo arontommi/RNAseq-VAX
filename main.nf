@@ -37,7 +37,7 @@ params.outdir = './results'
 params.bamfolder = './results/markDuplicates/'
 params.fasta = false
 params.project = false
-parms.genome =  'GRCh37'
+params.genome =  'GRCh37'
 
 params.rglb = '1'
 params.rgpl = 'illumina'
