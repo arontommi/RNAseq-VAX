@@ -241,37 +241,6 @@ process selectvariants {
     """
 }
 
-process runvep {
-    tag "$vcffile.baseName"
-    publishDir "${params.outdir}/VEP", mode: 'copy'
-
-    input:
-    set val(name), file(vcffile), file(vcffile_tbi) from vep_annotating
-    val params.genome
-
-    output:
-    set val(name), file("${name}.VEP.summary.html"), file("${name}.VEP.ann.vcf") into vep_out
-
-    script:
-
-    """
-    /opt/ensembl-vep/vep --dir /opt/.vep \
-        -i ${vcffile} \
-        -o ${name}.VEP.ann.vcf \
-        --assembly ${params.genome} \
-        --cache \
-        --cache_version 91 \
-        --database \
-        --everything \
-        --filter_common \
-        --format vcf \
-        --offline \
-        --per_gene \
-        --stats_file ${name}.VEP.summary.html \
-        --total_length \
-        --vcf
-    """
-}
 
 process allelespecificexpression {
     tag "$biallelec_vcf.baseName"
