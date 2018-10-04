@@ -2,7 +2,7 @@
 /*
 
 ========================================================================================
-                         RNA-seq_AVC
+                         RNAseq_VAX
 ========================================================================================
  RNAseq-VAX nalysis Pipeline. Started 2018-02-06.
  #### Homepage / Documentation
@@ -250,7 +250,7 @@ process runvep {
     val params.genome
 
     output:
-    set val(name), file("${name}.summary.html"), file("${name}.VEP.ann.vcf") into vep_out
+    set val(name), file("${name}.VEP.summary.html"), file("${name}.VEP.ann.vcf") into vep_out
 
     script:
 
