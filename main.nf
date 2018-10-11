@@ -122,7 +122,7 @@ process splitNCigarReads {
     script:
 
     """
-    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SplitNCigarReads \\
+    gatk SplitNCigarReads \\
     -R $genomefasta \\
     -I $rg_bam \\
     -O ${name}_split.bam 
@@ -154,7 +154,7 @@ process haplotypeCaller {
     script:
 
     """
-    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar HaplotypeCaller \\
+    gatk HaplotypeCaller \\
     -R $genomefasta \\
     -I $splitNCigar_bam \\
     --dont-use-soft-clipped-bases \\
@@ -190,7 +190,7 @@ process varfiltering {
     script:
 
     """
-    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar VariantFiltration \\
+    gatk VariantFiltration \\
     -R $genomefasta \\
     -V $vcf \\
     -window 35 \\
@@ -230,7 +230,7 @@ process selectvariants {
     script:
 
     """
-    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar SelectVariants \\
+    gatk SelectVariants \\
     -R $genomefasta \\
     -V $filtered_vcf \\
     --restrict-alleles-to BIALLELIC \\
@@ -258,7 +258,7 @@ process allelespecificexpression {
     script:
 
     """
-    java -jar \$GATK_HOME/gatk-package-4.0.1.2-local.jar ASEReadCounter \\
+    gatk ASEReadCounter \\
     -R $genomefasta \\
     -I $splitNCigar_bam \\
     -V $biallelec_vcf \\
