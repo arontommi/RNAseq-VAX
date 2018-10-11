@@ -93,7 +93,7 @@ process addReadGroups{
     }
     name = "${bam_md.baseName}"
     """
-    java -Xmx${avail_mem}g -jar \$PICARD_HOME/picard.jar AddOrReplaceReadGroups \\
+    picard AddOrReplaceReadGroups \\
         I= $bam_md \\
         O= ${name}.RG.bam \\
         RGLB=$rglb \\
