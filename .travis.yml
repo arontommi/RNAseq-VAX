@@ -30,5 +30,6 @@ env:
   - NXF_VER='' # Plus: get the latest NF version and check that it works
 
 script:
+  echo "PLACEHOLDER"
   # Lint the pipeline code
-  #- "nf-core lint ${TRAVIS_BUILD_DIR}" <- silenced until this is good enough to be added to nf-core
+  # "nf-core lint ${TRAVIS_BUILD_DIR}" <- silenced until this is good enough to be added to nf-core
