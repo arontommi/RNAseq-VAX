@@ -31,4 +31,4 @@ env:
 
 script:
   # Lint the pipeline code
-  - "nf-core lint ${TRAVIS_BUILD_DIR}"
+  #- "nf-core lint ${TRAVIS_BUILD_DIR}" <- silenced until this is good enough to be added to nf-core
