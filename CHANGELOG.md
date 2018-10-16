@@ -1,3 +1,15 @@
+## 0.2.0 - 2018-10-12
+
+
+- Better container, now build with bioconda
+- annotation removed to a seperate thing
+- CHANGELOG.md will now on be newest first.
+
+- TODO
+    + set up travis []
+    + fix conf []
+
+
 
 ## 0.1.0 - 2018-02-06
 Initial release of RNA-seq_AVC, created with the NGI-NFcookiecutter template: https://github.com/ewels/NGI-NFcookiecutter.
