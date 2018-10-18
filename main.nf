@@ -74,9 +74,6 @@ process addReadGroups{
 
     input:
     file bam_md
-    val rglb from params.rglb
-    val rgpl from params.rgpl
-    val rgpu from params.rgpu
 
     output:
     set val("$name"), file("${name}.RG.bam"), file("${name}.RG.bam.bai") into rg_data
@@ -93,16 +90,16 @@ process addReadGroups{
     picard AddOrReplaceReadGroups \\
         I= $bam_md \\
         O= ${name}.RG.bam \\
-        RGLB=$rglb \\
-        RGPL=$rgpl \\
-        RGPU=$rgpu \\
+        RGLB=${params.rglb} \\
+        RGPL=${params.rgpl} \\
+        RGPU=${params.rgpu} \\
         RGSM=${bam_md.baseName}
 
     samtools index ${bam_md.baseName}.RG.bam
     """
 }
 /*
- * STEP 7 SplitNCigarReads
+ * SplitNCigarReads
  */
 process splitNCigarReads {
     tag "$rg_bam"
@@ -129,7 +126,7 @@ process splitNCigarReads {
 }
 
 /*
- * STEP 7 Haplotypecaller
+ * Haplotypecaller
  */
 process haplotypeCaller {
     tag "$splitNCigar_bam.baseName"
@@ -155,7 +152,7 @@ process haplotypeCaller {
     -R $genomefasta \\
     -I $splitNCigar_bam \\
     --dont-use-soft-clipped-bases \\
-    --standard-min-confidence-threshold-for-calling 20.0 \\
+    --standard-min-confidence-threshold-for-calling ${params.s_min_theshold} \\
     -O ${name}.vcf 
     bgzip -c ${name}.vcf > ${name}.vcf.gz
     tabix -p vcf ${name}.vcf.gz
@@ -163,7 +160,7 @@ process haplotypeCaller {
 }
 
 /*
- * STEP 8 varfiltering
+ * varfiltering
  */
 process varfiltering {
     tag "$vcf.baseName"
@@ -190,12 +187,12 @@ process varfiltering {
     gatk VariantFiltration \\
     -R $genomefasta \\
     -V $vcf \\
-    -window 35 \\
-    -cluster 3 \\
+    -window $params.window \\
+    -cluster $params.cluster \\
     -filter-name FS \\
-    -filter "FS > 30.0" \\
+    -filter "FS > ${params.fs_filter}" \\
     -filter-name QD \\
-    -filter "QD < 2.0"  \\
+    -filter "QD < ${params.qd_filter}"  \\
     -O ${name}.sorted.vcf
     bgzip -c ${name}.sorted.vcf > ${name}.sorted.vcf.gz
     tabix -p vcf ${name}.sorted.vcf.gz
