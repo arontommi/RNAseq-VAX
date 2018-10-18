@@ -2,11 +2,13 @@
 please note : This pipeline is still in alpha stage. please use at your own risk
 
 
-# RNAseq-VAX - RNAseq Variante Allele Expression 
-this pipeline takes already aligned data from nf-core/rnaseq pipeline and calls variants with haplotypecaller as well as allele specific variants. The aim is to follow the guidelines for variant calling by GATK. It then annoatates the variants with VEP
+# RNAseq-VAX - RNAseq Variante Allele eXpression 
+The aim of this pipeline is to generate Allele specific expression data from already aligned bam files. it is designed to run on top of [nf-core/rnaseq](https://github.com/nf-core/rnaseq).
+
+The pipeline follows [GATK guideline for variant calling in RNAseq](https://gatkforums.broadinstitute.org/gatk/discussion/3892/the-gatk-best-practices-for-variant-calling-on-rnaseq-in-full-detail). It then uses [ASEReadCounter](https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/org_broadinstitute_gatk_tools_walkers_rnaseq_ASEReadCounter.php) to retrive allele specific expression.
+
 
 ### Introduction
-RNAseq-VAX: this pipeline takes already aligned data from NGI-RNAseq pipeline and calls variants and allele specifice variant expressions
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker / singularity containers making installation trivial and results highly reproducible.
 
