@@ -22,10 +22,10 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run RNAseq_VAX  -with-singularity rna-avc.img --project 'your_uppmax_project' --fasta /sw/data/uppnex/reference/Homo_sapiens/hg19/program_files/GATK/concat.fasta --genome GRCh37
+    nextflow run RNAseq_VAX  -with-singularity rnaseq-vax.simg --project 'your_uppmax_project' \
+    --fasta 'reference fasta used to align'
     
     Mandatory arguments:
-      --genome                     Genome( only works with GRCh37 right now.)
       --fasta                      fasta used to align 
       --project                    your Uppmax project
       -with-singularity            Singularity container
@@ -33,15 +33,12 @@ def helpMessage() {
     """.stripIndent()
 }
 
-params.outdir = './results'
-params.bamfolder = './results/markDuplicates/'
-params.fasta = false
-params.project = false
-params.genome =  'GRCh37'
+// Show help message
+if (params.help){
+    helpMessage()
+    exit 0
+}
 
-params.rglb = '1'
-params.rgpl = 'illumina'
-params.rgpu = 'unit1'
 
 wherearemyfiles = file("$baseDir/assets/where_are_my_files.txt")
 
