@@ -90,9 +90,9 @@ process addReadGroups{
     picard AddOrReplaceReadGroups \\
         I= $bam_md \\
         O= ${name}.RG.bam \\
-        RGLB=${params.rglb} \\
-        RGPL=${params.rgpl} \\
-        RGPU=${params.rgpu} \\
+        RGLB=${params.addReadGroups.rglb} \\
+        RGPL=${params.addReadGroups.rgpl} \\
+        RGPU=${params.addReadGroups.rgpu} \\
         RGSM=${bam_md.baseName}
 
     samtools index ${bam_md.baseName}.RG.bam
@@ -152,7 +152,7 @@ process haplotypeCaller {
     -R $genomefasta \\
     -I $splitNCigar_bam \\
     --dont-use-soft-clipped-bases \\
-    --standard-min-confidence-threshold-for-calling ${params.s_min_theshold} \\
+    --standard-min-confidence-threshold-for-calling ${params.haplotypeCaller.s_min_theshold} \\
     -O ${name}.vcf 
     bgzip -c ${name}.vcf > ${name}.vcf.gz
     tabix -p vcf ${name}.vcf.gz
@@ -187,12 +187,12 @@ process varfiltering {
     gatk VariantFiltration \\
     -R $genomefasta \\
     -V $vcf \\
-    -window $params.window \\
-    -cluster $params.cluster \\
+    -window $params.varfiltering.window \\
+    -cluster $params.varfiltering.cluster \\
     -filter-name FS \\
-    -filter "FS > ${params.fs_filter}" \\
+    -filter "FS > ${params.varfiltering.fs_filter}" \\
     -filter-name QD \\
-    -filter "QD < ${params.qd_filter}"  \\
+    -filter "QD < ${params.varfiltering.qd_filter}"  \\
     -O ${name}.sorted.vcf
     bgzip -c ${name}.sorted.vcf > ${name}.sorted.vcf.gz
     tabix -p vcf ${name}.sorted.vcf.gz
