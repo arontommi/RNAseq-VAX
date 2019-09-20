@@ -1,4 +1,4 @@
-# RNA-seq_AVC Usage
+# RNA-seq_VAX Usage
 
 This pipeline is still in alpha stage. please use at your own cause
 
