@@ -76,6 +76,7 @@ process RunVEP {
     vep --dir /.vep \
         -i $vcffile \
         -o ${name}.VEP.ann.vcf \
+        --fork 8
         --assembly $genome \
         --cache \
         --cache_version $vep_version \
