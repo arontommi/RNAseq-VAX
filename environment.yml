@@ -11,6 +11,3 @@ dependencies:
  - samtools=1.9
  - bcftools=1.7
  - htslib=1.9
- - python=3.6.4
- - click=6.7
- - cyvcf2=0.8.4
