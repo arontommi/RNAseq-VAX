@@ -10,9 +10,7 @@ dependencies:
  - picard=2.0.1
  - samtools=1.9
  - bcftools=1.7
-<<<<<<< HEAD
- - htslib=1.7
- - snpsift=4.3.1t
-=======
  - htslib=1.9
->>>>>>> master
+ - python=3.6.4
+ - click=6.7
+ - cyvcf2=0.8.4
