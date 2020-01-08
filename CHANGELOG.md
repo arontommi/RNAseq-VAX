@@ -1,3 +1,11 @@
+# rnaseq-vax: Changelog
+
+
+# Version 0.2.1.dev 
+
+## Changes 
+    not much, mainly restarting the project and updating and improving the existing code
+
 ## 0.2.0 - 2018-10-12
 
 
