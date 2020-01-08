@@ -70,11 +70,11 @@ if ( params.fasta ){
         genomefasta = file(params.fasta)
         genomefai = file(params.fasta + '.fai')
         genomedict = file(params.fasta - '.fasta'+'.dict')
-else if ( ! params.fasta){
-    exit 1, "No reference fasta/fai/dict provided, please provide a reference fasta file, with an index file and a dict "
     }
 }
-}
+else if ( !params.fasta){
+    exit 1, "No reference fasta/fai/dict provided, please provide a reference fasta file, with an index file and a dict "
+    }
 /*
  * STEP 1 - Readgroups added 
  */
