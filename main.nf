@@ -16,7 +16,7 @@
 def helpMessage() {
     log.info"""
     =========================================
-     RNAseq_VAX v${version}
+     RNAseq_VAX v${params.version}
     =========================================
     Usage:
 
