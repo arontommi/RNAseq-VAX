@@ -1,0 +1,1 @@
+#TODO step that extracts ref genome location from bam header if no ref genome is provided.
