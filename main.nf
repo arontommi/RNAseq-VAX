@@ -16,7 +16,7 @@
 def helpMessage() {
     log.info"""
     =========================================
-     RNAseq_VAX v${params.version}
+     RNAseq_VAX v ${params.version}
     =========================================
     Usage:
 
@@ -26,9 +26,15 @@ def helpMessage() {
     --fasta 'reference fasta used to align'
     
     Mandatory arguments:
-      --fasta                      fasta used to align 
-      --project                    your Uppmax project
+      --fasta                      Path to genome fasta file (use the same fasta you used for the STARindex file)
+      -profile                     Profile to use (singularity works)
+
+    Other options:
+      -name                         Name for the pipeline run. If not specified, Nextflow will automatically generate a random mnemonics
       -with-singularity            Singularity container
+      --project                    your Uppmax project
+      --outdir                      The output directory where the results will be saved
+
 
     """.stripIndent()
 }
@@ -64,10 +70,13 @@ if ( params.fasta ){
         genomefasta = file(params.fasta)
         genomefai = file(params.fasta + '.fai')
         genomedict = file(params.fasta - '.fasta'+'.dict')
+else if ( ! params.fasta){
+    exit 1, "No reference fasta/fai/dict provided, please provide a reference fasta file, with an index file and a dict "
     }
 }
+}
 /*
- * Readgroups added 
+ * STEP 1 - Readgroups added 
  */
 process addReadGroups{ 
     tag "$bam_md.baseName"
@@ -99,7 +108,7 @@ process addReadGroups{
     """
 }
 /*
- * SplitNCigarReads
+ * STEP 2 - SplitNCigarReads
  */
 process splitNCigarReads {
     tag "$rg_bam"
@@ -126,7 +135,7 @@ process splitNCigarReads {
 }
 
 /*
- * Haplotypecaller
+ * STEP 3 - Haplotypecaller
  */
 process haplotypeCaller {
     tag "$splitNCigar_bam.baseName"
@@ -160,8 +169,8 @@ process haplotypeCaller {
 }
 
 /*
- * varfiltering
- */
+ * STEP 4 - varfiltering
+ */ 
 process varfiltering {
     tag "$vcf.baseName"
     publishDir "${params.outdir}/VariantFiltration", mode: 'copy',
@@ -198,8 +207,9 @@ process varfiltering {
     tabix -p vcf ${name}.sorted.vcf.gz
     """
 }
-
-
+/*
+ * STEP 5 - selectvariants
+ */ 
 
 process selectvariants {
     tag "$filtered_vcf.baseName"
@@ -234,7 +244,9 @@ process selectvariants {
     tabix -p vcf ${name}.biallelec.vcf.gz 
     """
 }
-
+/*
+ * STEP 6 - allelespecificexpression
+ */ 
 
 process allelespecificexpression {
     tag "$biallelec_vcf.baseName"
